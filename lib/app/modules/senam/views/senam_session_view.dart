@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/routes/app_pages.dart';
+import 'package:PregMate/app/routes/app_pages.dart';
 
 class SenamSessionView extends StatefulWidget {
   final String title;

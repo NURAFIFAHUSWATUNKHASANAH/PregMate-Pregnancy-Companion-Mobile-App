@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/bottom/controllers/bottom_controller.dart';
-import 'package:pyhsiocare/app/modules/home/views/home_view.dart';
-import 'package:pyhsiocare/app/modules/profil/views/profil_view.dart';
-import 'package:pyhsiocare/app/modules/diskusi/views/diskusi_view.dart';
-import 'package:pyhsiocare/app/modules/informasi/views/informasi_view.dart';
+import 'package:PregMate/app/modules/bottom/controllers/bottom_controller.dart';
+import 'package:PregMate/app/modules/home/views/home_view.dart';
+import 'package:PregMate/app/modules/profil/views/profil_view.dart';
+import 'package:PregMate/app/modules/diskusi/views/diskusi_view.dart';
+import 'package:PregMate/app/modules/informasi/views/informasi_view.dart';
 
 class BottomScreen extends GetView<BottomController> {
 

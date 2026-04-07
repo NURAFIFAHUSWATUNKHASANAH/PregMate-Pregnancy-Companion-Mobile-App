@@ -33,6 +33,8 @@ abstract class Routes {
   static const SENAM = _Paths.SENAM;
   static const SENAM_AI = _Paths.SENAM_AI;
   static const INFORMASI = _Paths.INFORMASI;
+  static const CRAVING = _Paths.CRAVING;
+  static const TIPS_NEWBORN = _Paths.TIPS_NEWBORN;
 }
 
 abstract class _Paths {
@@ -67,4 +69,6 @@ abstract class _Paths {
   static const SENAM = '/senam';
   static const SENAM_AI = '/senam-ai';
   static const INFORMASI = '/informasi';
+  static const CRAVING = '/craving';
+  static const TIPS_NEWBORN = '/tips-newborn';
 }

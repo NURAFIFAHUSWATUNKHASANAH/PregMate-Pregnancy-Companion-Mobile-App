@@ -11,8 +11,8 @@ import '../services/tflite_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:pyhsiocare/app/modules/histori/controllers/histori_controller.dart';
+import 'package:PregMate/config/api_config.dart';
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
 
 class SenamAiController extends GetxController {
   CameraController? cameraController;

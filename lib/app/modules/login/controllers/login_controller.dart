@@ -5,11 +5,11 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:pyhsiocare/app/modules/histori/controllers/histori_controller.dart';
-import 'package:pyhsiocare/app/data/services/auth_services.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:pyhsiocare/app/routes/app_pages.dart';
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
+import 'package:PregMate/app/data/services/auth_services.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/config/api_config.dart';
+import 'package:PregMate/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
   var email = ''.obs;

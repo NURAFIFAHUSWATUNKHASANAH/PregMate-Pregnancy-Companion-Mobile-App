@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/views/informasi_view.dart';
+import 'package:PregMate/config/api_config.dart';
+import 'package:PregMate/app/modules/rekomendasi/views/informasi_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RekomendasiController extends GetxController {

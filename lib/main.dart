@@ -4,15 +4,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_storage/get_storage.dart';
 
-import 'package:pyhsiocare/app/modules/artikel/controllers/artikel_controller.dart';
-import 'package:pyhsiocare/app/modules/home/controllers/home_controller.dart';
-import 'package:pyhsiocare/app/modules/jadwal/controllers/jadwal_controller.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
-import 'package:pyhsiocare/app/modules/histori/controllers/histori_controller.dart';
+import 'package:PregMate/app/modules/artikel/controllers/artikel_controller.dart';
+import 'package:PregMate/app/modules/home/controllers/home_controller.dart';
+import 'package:PregMate/app/modules/jadwal/controllers/jadwal_controller.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
 
 import 'app/routes/app_pages.dart';
 import 'app/services/firebase_notification_service.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/config/api_config.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();

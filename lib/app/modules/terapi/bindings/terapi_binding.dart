@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
 
 import '../controllers/terapi_controller.dart';
 

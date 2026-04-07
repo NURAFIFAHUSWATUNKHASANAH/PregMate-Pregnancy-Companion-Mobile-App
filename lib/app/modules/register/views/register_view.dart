@@ -58,16 +58,6 @@ class RegisterView extends GetView<RegisterController> {
                       const SizedBox(height: 35),
 
                       /// ================= FIELD INPUTS =================
-                      
-                      _buildLabel("Email Ibu"),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        controller: controller.emailController,
-                        hint: "Contoh: ibu@email.com",
-                        icon: Icons.email_outlined,
-                      ),
-
-                      const SizedBox(height: 20),
 
                       _buildLabel("Nama Lengkap Ibu"),
                       const SizedBox(height: 8),
@@ -75,6 +65,16 @@ class RegisterView extends GetView<RegisterController> {
                         controller: controller.nameController,
                         hint: "Masukkan nama lengkap",
                         icon: Icons.person_outline_rounded,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      _buildLabel("Email Ibu"),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        controller: controller.emailController,
+                        hint: "Contoh: ibu@email.com",
+                        icon: Icons.email_outlined,
                       ),
 
                       const SizedBox(height: 20),
@@ -206,7 +206,8 @@ class RegisterView extends GetView<RegisterController> {
           hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
           prefixIcon: Icon(icon, color: const Color(0xFF0C2D57), size: 20),
           // Padding vertical disesuaikan agar tidak mendorong teks terlalu ke atas
-          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,

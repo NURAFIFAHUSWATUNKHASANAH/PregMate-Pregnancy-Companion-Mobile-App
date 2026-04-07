@@ -1,27 +1,28 @@
 import 'dart:convert';
+import 'package:PregMate/app/modules/tips_newborn/views/tips_newborn_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:pyhsiocare/app/modules/artikel/views/article_detail_view.dart';
-import 'package:pyhsiocare/app/modules/diskusi/bindings/diskusi_binding.dart';
-import 'package:pyhsiocare/app/modules/diskusi/views/diskusi_view.dart';
-import 'package:pyhsiocare/app/modules/meditation/bindings/meditation_binding.dart';
-import 'package:pyhsiocare/app/modules/meditation/views/meditation_view.dart';
-import 'package:pyhsiocare/app/modules/mood/controllers/mood_controller.dart';
-import 'package:pyhsiocare/app/modules/mood/views/mood_view.dart';
-import 'package:pyhsiocare/app/modules/nama_bayi/bindings/nama_bayi_binding.dart';
-import 'package:pyhsiocare/app/modules/nama_bayi/views/nama_bayi_view.dart';
-import 'package:pyhsiocare/app/routes/app_pages.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/app/modules/artikel/views/article_detail_view.dart';
+import 'package:PregMate/app/modules/diskusi/bindings/diskusi_binding.dart';
+import 'package:PregMate/app/modules/diskusi/views/diskusi_view.dart';
+import 'package:PregMate/app/modules/meditation/bindings/meditation_binding.dart';
+import 'package:PregMate/app/modules/meditation/views/meditation_view.dart';
+import 'package:PregMate/app/modules/mood/controllers/mood_controller.dart';
+import 'package:PregMate/app/modules/mood/views/mood_view.dart';
+import 'package:PregMate/app/modules/nama_bayi/bindings/nama_bayi_binding.dart';
+import 'package:PregMate/app/modules/nama_bayi/views/nama_bayi_view.dart';
+import 'package:PregMate/app/routes/app_pages.dart';
+import 'package:PregMate/config/api_config.dart';
 import 'dart:math' as math;
-import 'package:pyhsiocare/app/modules/jadwal/controllers/jadwal_controller.dart';
-import 'package:pyhsiocare/app/modules/keluhan/controllers/keluhan_controller.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/app/modules/jadwal/controllers/jadwal_controller.dart';
+import 'package:PregMate/app/modules/keluhan/controllers/keluhan_controller.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
 import '../controllers/home_controller.dart';
-import 'package:pyhsiocare/app/modules/artikel/controllers/artikel_controller.dart';
-import 'package:pyhsiocare/app/modules/artikel/views/all_articles_view.dart';
+import 'package:PregMate/app/modules/artikel/controllers/artikel_controller.dart';
+import 'package:PregMate/app/modules/artikel/views/all_articles_view.dart';
 
 class HomeView extends GetView<HomeController> {
   HomeView({Key? key}) : super(key: key);
@@ -274,7 +275,7 @@ class HomeView extends GetView<HomeController> {
                           ),
                         );
                         menus.add(_buildGridMenu(
-                            label: "Rileks",
+                            label: "Ruang Napas",
                             icon: Icons.spa,
                             color: const Color(0xFF9C27B0),
                             onTap: () => Get.to(() => MeditationView(),
@@ -316,8 +317,41 @@ class HomeView extends GetView<HomeController> {
                             icon: Icons.description_rounded,
                             color: const Color(0xFF2196F3),
                             onTap: () => Get.to(() => AllArtikelView())),
+                        _buildGridMenu(
+                          label: "Tas Bersalin",
+                          icon: Icons.checklist_rounded,
+                          color: const Color(0xFFE91E63),
+                          onTap: () {
+                            Get.snackbar(
+                              "Coming Soon 🚧",
+                              "Fitur persiapan persalinan sedang dikembangkan",
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          },
+                        ),
+_buildGridMenu(
+  label: "Tips Newborn",
+  icon: Icons.baby_changing_station_rounded,
+  color: const Color(0xFF00BCD4),
+  onTap: () {
+    // Navigasi menggunakan route name
+    Get.toNamed('/tips-newborn');
+  },
+),
+                        // _buildGridMenu(
+                        //   label: "Tips Perawatan Newborn",
+                        //   icon: Icons.baby_changing_station_rounded,
+                        //   color: const Color(
+                        //       0xFF00BCD4), // warna biru muda, bisa diganti
+                        //   onTap: () {
+                        //     Get.snackbar(
+                        //       "Coming Soon 🚧",
+                        //       "Fitur Perawatan Newborn persalinan sedang dikembangkan",
+                        //       snackPosition: SnackPosition.BOTTOM,
+                        //     );
+                        //   },
+                        // ),
                       ]);
-
                       return GridView.count(
                         crossAxisCount: 4,
                         shrinkWrap: true,

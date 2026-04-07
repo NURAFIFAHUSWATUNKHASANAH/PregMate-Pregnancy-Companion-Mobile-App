@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class ProfileController extends GetxController {
 

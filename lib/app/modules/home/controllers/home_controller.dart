@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:pyhsiocare/app/modules/histori/views/histori_view.dart';
-import 'package:pyhsiocare/app/modules/home/views/home_view.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
-import 'package:pyhsiocare/app/modules/profil/views/profil_view.dart';
-import 'package:pyhsiocare/app/modules/terapi/views/terapi_view.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/app/modules/histori/views/histori_view.dart';
+import 'package:PregMate/app/modules/home/views/home_view.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/app/modules/profil/views/profil_view.dart';
+import 'package:PregMate/app/modules/terapi/views/terapi_view.dart';
+import 'package:PregMate/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pyhsiocare/app/modules/histori/controllers/histori_controller.dart';
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
 
 class HomeController extends GetxController {
   final box = GetStorage();

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -11,11 +11,11 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/config/api_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pyhsiocare/app/modules/histori/controllers/histori_controller.dart';
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
 // Tambahkan di bagian bawah kamera_controller.dart
-import 'package:pyhsiocare/app/modules/home/controllers/home_controller.dart';
+import 'package:PregMate/app/modules/home/controllers/home_controller.dart';
 
 class KameraController extends GetxController {
   late CameraController cameraController;

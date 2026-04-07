@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/kamera/views/kamera_view.dart';
+import 'package:PregMate/app/modules/kamera/views/kamera_view.dart';
 import '../controllers/rekomendasi_controller.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/views/informasi_view.dart';
+import 'package:PregMate/app/modules/rekomendasi/views/informasi_view.dart';
 
 class RekomendasiDialog extends StatelessWidget {
   const RekomendasiDialog({Key? key}) : super(key: key);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/views/rekomendasi_view.dart';
+import 'package:PregMate/app/modules/rekomendasi/views/rekomendasi_view.dart';
 
 class ValidasiDialog extends StatefulWidget {
   final Function()? onValid;

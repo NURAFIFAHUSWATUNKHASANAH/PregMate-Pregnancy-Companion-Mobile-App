@@ -111,20 +111,26 @@ class MoodView extends StatelessWidget {
   Widget _buildVerticalSliders() {
     return Column(
       children: [
-        _buildFullWidthSlider("Mual", controller.mual, Colors.orange, Icons.sick_rounded, "Ringan", "Berat"),
+        _buildFullWidthSlider("Mual", controller.mual, Colors.orange,
+            Icons.sick_rounded, "Ringan", "Berat"),
         const SizedBox(height: 16),
-        _buildFullWidthSlider("Energi", controller.energi, Colors.green, Icons.bolt_rounded, "Lemah", "Aktif"),
+        _buildFullWidthSlider("Kondisi Tubuh", controller.energi, Colors.green,
+            Icons.bolt_rounded, "Lemas", "Bugar"),
         const SizedBox(height: 16),
-        _buildFullWidthSlider("Nyeri Tubuh", controller.nyeri, Colors.redAccent, Icons.healing_rounded, "Nyaman", "Sakit"),
+        _buildFullWidthSlider("Pegal-Pegal", controller.nyeri, Colors.redAccent,
+            Icons.healing_rounded, "Nyaman", "Sakit"),
         const SizedBox(height: 16),
-        _buildFullWidthSlider("Tidur", controller.tidur, Colors.indigo, Icons.bedtime_rounded, "Buruk", "Pulas"),
+        _buildFullWidthSlider("Tidur", controller.tidur, Colors.indigo,
+            Icons.bedtime_rounded, "Buruk", "Pulas"),
         const SizedBox(height: 16),
-        _buildFullWidthSlider("Nafsu Makan", controller.nafsuMakan, Colors.pinkAccent, Icons.restaurant_rounded, "Kurang", "Baik"),
+        _buildFullWidthSlider("Nafsu Makan", controller.nafsuMakan,
+            Colors.pinkAccent, Icons.restaurant_rounded, "Kurang", "Baik"),
       ],
     );
   }
 
-  Widget _buildFullWidthSlider(String label, RxDouble obsValue, Color color, IconData icon, String minL, String maxL) {
+  Widget _buildFullWidthSlider(String label, RxDouble obsValue, Color color,
+      IconData icon, String minL, String maxL) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -132,7 +138,10 @@ class MoodView extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 20,
+              offset: const Offset(0, 10))
         ],
       ),
       child: Column(
@@ -144,44 +153,60 @@ class MoodView extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10)),
                     child: Icon(icon, size: 18, color: color),
                   ),
                   const SizedBox(width: 12),
-                  Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(label,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold)),
                 ],
               ),
               Obx(() => Text(
-                "${obsValue.value.toInt()}/10",
-                style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 16),
-              )),
+                    "${obsValue.value.toInt()}/10",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                        fontSize: 16),
+                  )),
             ],
           ),
           const SizedBox(height: 8),
           Obx(() => SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 6,
-              activeTrackColor: color,
-              inactiveTrackColor: color.withOpacity(0.1),
-              thumbColor: Colors.white,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
-              overlayColor: color.withOpacity(0.1),
-            ),
-            child: Slider(
-              min: 0,
-              max: 10,
-              divisions: 10,
-              value: obsValue.value,
-              onChanged: (v) => obsValue.value = v,
-            ),
-          )),
+                data: SliderThemeData(
+                  trackHeight: 6,
+                  activeTrackColor: color,
+                  inactiveTrackColor: color.withOpacity(0.1),
+                  thumbColor: Colors.white,
+                  thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 10, elevation: 4),
+                  overlayColor: color.withOpacity(0.1),
+                ),
+                child: Slider(
+                  min: 0,
+                  max: 10,
+                  divisions: 10,
+                  value: obsValue.value,
+                  onChanged: (v) => obsValue.value = v,
+                ),
+              )),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(minL, style: TextStyle(fontSize: 11, color: Colors.grey[400], fontWeight: FontWeight.w600)),
-                Text(maxL, style: TextStyle(fontSize: 11, color: Colors.grey[400], fontWeight: FontWeight.w600)),
+                Text(minL,
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[400],
+                        fontWeight: FontWeight.w600)),
+                Text(maxL,
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[400],
+                        fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -196,26 +221,35 @@ class MoodView extends StatelessWidget {
       height: 65,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(colors: [primaryDark, const Color(0xFF1A4D8C)]),
+        gradient:
+            LinearGradient(colors: [primaryDark, const Color(0xFF1A4D8C)]),
         boxShadow: [
-          BoxShadow(color: primaryDark.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))
+          BoxShadow(
+              color: primaryDark.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8))
         ],
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         ),
         onPressed: () => controller.getRecommendation(),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+            const Icon(Icons.auto_awesome_rounded,
+                color: Colors.white, size: 20),
             const SizedBox(width: 12),
             const Text(
               "Dapatkan Analisis Cerdas",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white),
             ),
           ],
         ),
@@ -229,7 +263,8 @@ class MoodView extends StatelessWidget {
         return const Center(
           child: Padding(
             padding: EdgeInsets.all(30.0),
-            child: CircularProgressIndicator(color: Color(0xFF0C2D57), strokeWidth: 3),
+            child: CircularProgressIndicator(
+                color: Color(0xFF0C2D57), strokeWidth: 3),
           ),
         );
       }
@@ -239,19 +274,34 @@ class MoodView extends StatelessWidget {
       // Logika Pemisahan Data
       List<String> rawLines = controller.recommendation.value.split('\n');
       String analisisSingkat = "";
+      bool isAnalisis = false;
       Map<String, List<String>> sections = {};
       String currentKey = "";
 
       for (var line in rawLines) {
-        String cleanLine = line.replaceAll(RegExp(r'^[0-9.]+|[#*•\-]'), '').trim();
+        String cleanLine =
+            line.replaceAll(RegExp(r'^[0-9.]+|[#*•\-]'), '').trim();
         if (cleanLine.isEmpty) continue;
 
         if (cleanLine.toUpperCase().contains("ANALISIS SINGKAT")) {
-          analisisSingkat = cleanLine.replaceAll("ANALISIS SINGKAT:", "").trim();
-          currentKey = ""; // Reset agar tidak masuk kategori lain
-        } else if (cleanLine.toUpperCase() == "NUTRISI" || 
-                   cleanLine.toUpperCase() == "AKTIVITAS" || 
-                   cleanLine.toUpperCase() == "RELAKSASI") {
+          isAnalisis = true;
+          continue;
+        }
+
+        if (isAnalisis) {
+          if (cleanLine.toUpperCase() == "NUTRISI") {
+            isAnalisis = false;
+            currentKey = "NUTRISI";
+            sections[currentKey] = [];
+          } else {
+            analisisSingkat += "$cleanLine ";
+          }
+          continue;
+        }
+
+        if (cleanLine.toUpperCase() == "NUTRISI" ||
+            cleanLine.toUpperCase() == "AKTIVITAS" ||
+            cleanLine.toUpperCase() == "RELAKSASI") {
           currentKey = cleanLine.toUpperCase();
           sections[currentKey] = [];
         } else if (currentKey.isNotEmpty) {
@@ -268,9 +318,11 @@ class MoodView extends StatelessWidget {
             _buildSummaryBox(analisisSingkat),
             const SizedBox(height: 32),
           ],
-          _buildSectionHeader("Saran Personal Bunda"),
+          _buildSectionHeader("Rekomendasi"),
           const SizedBox(height: 16),
-          ...sections.entries.map((entry) => _buildModernInfoCard(entry.key, entry.value)).toList(),
+          ...sections.entries
+              .map((entry) => _buildModernInfoCard(entry.key, entry.value))
+              .toList(),
         ],
       );
     });
@@ -326,7 +378,10 @@ class MoodView extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(color: themeColor.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 10))
+          BoxShadow(
+              color: themeColor.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 10))
         ],
         border: Border.all(color: themeColor.withOpacity(0.1)),
       ),
@@ -338,19 +393,26 @@ class MoodView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: themeColor.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                      color: themeColor,
+                      borderRadius: BorderRadius.circular(12)),
                   child: Icon(icon, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 15),
                 Text(
                   title,
-                  style: TextStyle(fontWeight: FontWeight.w900, color: themeColor, fontSize: 15, letterSpacing: 1.1),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: themeColor,
+                      fontSize: 15,
+                      letterSpacing: 1.1),
                 ),
               ],
             ),
@@ -369,17 +431,26 @@ class MoodView extends StatelessWidget {
                         margin: const EdgeInsets.only(top: 2),
                         width: 24,
                         height: 24,
-                        decoration: BoxDecoration(color: themeColor.withOpacity(0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                            color: themeColor.withOpacity(0.1),
+                            shape: BoxShape.circle),
                         child: Center(
-                          child: Text("${point.key + 1}", 
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: themeColor)),
+                          child: Text("${point.key + 1}",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: themeColor)),
                         ),
                       ),
                       const SizedBox(width: 15),
                       Expanded(
                         child: Text(
                           point.value,
-                          style: TextStyle(fontSize: 14, height: 1.6, color: primaryDark.withOpacity(0.85), fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              fontSize: 14,
+                              height: 1.6,
+                              color: primaryDark.withOpacity(0.85),
+                              fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/views/informasi_view.dart';
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/app/modules/rekomendasi/views/informasi_view.dart';
 import '../controllers/terapi_controller.dart';
-import 'package:pyhsiocare/app/widgets/validasi_dialog.dart';
+import 'package:PregMate/app/widgets/validasi_dialog.dart';
 
 class TerapiView extends StatelessWidget {
   final TerapiController controller = Get.put(TerapiController());

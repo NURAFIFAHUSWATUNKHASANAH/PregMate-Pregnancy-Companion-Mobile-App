@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({Key? key}) : super(key: key);

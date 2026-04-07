@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
 
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class AuthService {
   final GetStorage _storage = GetStorage();

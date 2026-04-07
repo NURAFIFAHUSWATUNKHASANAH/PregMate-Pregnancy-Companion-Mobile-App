@@ -5,11 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
-import 'package:pyhsiocare/app/modules/artikel/controllers/artikel_controller.dart';
-import 'package:pyhsiocare/app/modules/artikel/views/all_articles_view.dart';
-import 'package:pyhsiocare/app/modules/artikel/views/article_detail_view.dart';
+import 'package:PregMate/config/api_config.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/app/modules/artikel/controllers/artikel_controller.dart';
+import 'package:PregMate/app/modules/artikel/views/all_articles_view.dart';
+import 'package:PregMate/app/modules/artikel/views/article_detail_view.dart';
 
 class HomeViewPendamping extends StatelessWidget {
   HomeViewPendamping({Key? key}) : super(key: key);

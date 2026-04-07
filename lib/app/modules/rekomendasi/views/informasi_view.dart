@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/kamera/views/kamera_view.dart';
+import 'package:PregMate/app/modules/kamera/views/kamera_view.dart';
 
 class InformasiDialog extends StatelessWidget {
   final Map<String, dynamic> terapi;

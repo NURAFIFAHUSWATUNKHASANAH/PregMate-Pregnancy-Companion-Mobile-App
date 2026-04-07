@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
 import '../controllers/kamera_controller.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:video_player/video_player.dart';

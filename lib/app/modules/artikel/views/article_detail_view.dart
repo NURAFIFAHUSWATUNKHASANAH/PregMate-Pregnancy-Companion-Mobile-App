@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/artikel_controller.dart';
-import 'package:pyhsiocare/models/artikel_model.dart';
+import 'package:PregMate/models/artikel_model.dart';
 
 class ArtikelDetailView extends StatelessWidget {
   final String id;

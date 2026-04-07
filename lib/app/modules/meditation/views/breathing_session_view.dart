@@ -1,3 +1,4 @@
+import 'package:PregMate/app/modules/meditation/controllers/meditation_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:math' as math;
@@ -22,8 +23,6 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
     with SingleTickerProviderStateMixin {
   // Kontrol Animasi
   late AnimationController _controller;
-  late Animation<double> _sizeAnimation;
-  late Animation<double> _rotationAnimation;
 
   // Kontrol Waktu
   Timer? _sessionTimer;
@@ -40,20 +39,11 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
     super.initState();
     remainingSeconds = widget.duration;
 
-    // Inisialisasi Kontroler (Durasi 4 detik untuk satu fase napas)
+    // Inisialisasi Kontroler (4 detik per fase)
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
     );
-
-    // Animasi ukuran lingkaran agar terasa organik
-    _sizeAnimation = Tween<double>(begin: 140, end: 260).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
-    );
-
-    // Animasi rotasi halus
-    _rotationAnimation =
-        Tween<double>(begin: 0, end: math.pi).animate(_controller);
 
     // Listener untuk perpindahan fase Tarik/Hembus
     _controller.addStatusListener((status) {
@@ -76,8 +66,6 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
       }
     });
   }
-
-  // --- LOGIKA SESI ---
 
   void startSession() {
     setState(() {
@@ -115,19 +103,34 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
   }
 
   void _showCompletionDialog() {
+    // 🔥 PANGGIL CONTROLLER
+    final meditationC = Get.find<MeditationController>();
+
+    // 🔥 HITUNG DURASI (detik → menit)
+    double durasiMenit = widget.duration / 60;
+
+    // 🔥 KIRIM NOTIF
+    meditationC.kirimNotifSelesaiRelaksasi(
+      label: widget.title,
+      durasiMenit: durasiMenit,
+    );
+
     Get.dialog(
       barrierDismissible: false,
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Sesi Selesai", style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text("Luar biasa Bunda! Anda telah meluangkan waktu untuk ketenangan diri."),
+        title: const Text("Sesi Selesai",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text(
+            "Luar biasa Bunda! Anda telah meluangkan waktu untuk ketenangan diri."),
         actions: [
           TextButton(
             onPressed: () {
-              Get.back(); // Tutup Dialog
-              Get.back(); // Kembali ke List
+              Get.back();
+              Get.back();
             },
-            child: const Text("SAMA-SAMA", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text("Sama-sama",
+                style: TextStyle(fontWeight: FontWeight.bold)),
           )
         ],
       ),
@@ -148,8 +151,6 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
     super.dispose();
   }
 
-  // --- UI COMPONENTS ---
-
   @override
   Widget build(BuildContext context) {
     const Color kMidnightBlue = Color(0xFF0C2D57);
@@ -160,7 +161,8 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(widget.title,
-            style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -171,7 +173,7 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
       ),
       body: Stack(
         children: [
-          // 1. BACKGROUND GRADIENT DYNAMIS
+          // 1. BACKGROUND GRADIENT
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -186,12 +188,10 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Timer Sesi
                 Text(formatTime(remainingSeconds),
-                    style: const TextStyle(color: Colors.white70, fontSize: 18, letterSpacing: 2)),
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 18, letterSpacing: 2)),
                 const SizedBox(height: 20),
-                
-                // Progress Bar Halus
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 50),
                   child: LinearProgressIndicator(
@@ -202,65 +202,80 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
                   ),
                 ),
                 const SizedBox(height: 50),
-
-                // Teks Instruksi
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 600),
                   child: Text(
                     breathingText,
                     key: ValueKey(breathingText),
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: Colors.white),
+                    style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 10),
-                
-                // Counter Detik Napas
                 Text(
                   isStarted ? breathingCounter.toString() : "-",
-                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-                
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
 
-                // 2. LINGKARAN ANIMASI
+                // 2. GRAFIK NAIK TURUN (GANTI LINGKARAN)
                 AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        _buildRipple(size: _sizeAnimation.value + 45, opacity: 0.1, color: kRosePink),
-                        _buildRipple(size: _sizeAnimation.value + 20, opacity: 0.2, color: kRosePink),
-                        Transform.rotate(
-                          angle: _rotationAnimation.value,
-                          child: Container(
-                            width: _sizeAnimation.value,
-                            height: _sizeAnimation.value,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [kRosePink, Color(0xFFFFB5C0)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kRosePink.withOpacity(0.4),
-                                  blurRadius: 40,
-                                  spreadRadius: 2,
-                                )
-                              ],
+                    return Container(
+                      height: 250,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Efek Cahaya Belakang (Glow)
+                          CustomPaint(
+                            size: const Size(double.infinity, 250),
+                            painter: BreathingWavePainter(
+                              animationValue: _controller.value,
+                              color: kRosePink.withOpacity(0.2),
+                              isGlow: true,
                             ),
-                            child: const Icon(Icons.self_improvement, color: Colors.white, size: 45),
                           ),
-                        ),
-                      ],
+                          // Garis Grafik Utama
+                          CustomPaint(
+                            size: const Size(double.infinity, 250),
+                            painter: BreathingWavePainter(
+                              animationValue: _controller.value,
+                              color: kRosePink,
+                            ),
+                          ),
+                          // Icon Mengapung yang ikut naik turun
+                          Positioned(
+                            bottom: 50 + (_controller.value * 120),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: kRosePink.withOpacity(0.3),
+                                        blurRadius: 15,
+                                        spreadRadius: 2)
+                                  ]),
+                              child: const Icon(Icons.spa,
+                                  color: Colors.white, size: 30),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),
-                const SizedBox(height: 100),
-                
-                // Tombol Batal/Selesai Manual
+                const SizedBox(height: 60),
                 _buildSelesaiButton(),
               ],
             ),
@@ -277,32 +292,36 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.spa_outlined, color: kRosePink, size: 80),
+                        const Icon(Icons.spa_outlined,
+                            color: kRosePink, size: 80),
                         const SizedBox(height: 20),
-                        const Text(
-                          "Ambil Posisi Nyaman",
-                          style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
-                        ),
+                        const Text("Ambil Posisi Nyaman",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800)),
                         const SizedBox(height: 10),
-                        const Text(
-                          "Tekan tombol di bawah untuk memulai",
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
-                        ),
+                        const Text("Tekan tombol di bawah untuk memulai",
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 16)),
                         const SizedBox(height: 40),
                         ElevatedButton(
                           onPressed: startSession,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kRosePink,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 50, vertical: 18),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)),
                             elevation: 15,
                             shadowColor: kRosePink.withOpacity(0.5),
                           ),
-                          child: const Text(
-                            "MULAI SEKARANG",
-                            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 16),
-                          ),
+                          child: const Text("MULAI SEKARANG",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                  fontSize: 16)),
                         ),
                       ],
                     ),
@@ -311,19 +330,6 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  // --- HELPER WIDGETS ---
-
-  Widget _buildRipple({required double size, required double opacity, required Color color}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
       ),
     );
   }
@@ -345,14 +351,64 @@ class _BreathingSessionViewState extends State<BreathingSessionView>
             ),
             child: TextButton(
               onPressed: () => Get.back(),
-              child: const Text(
-                "BATALKAN",
-                style: TextStyle(color: Colors.white60, fontWeight: FontWeight.w600, letterSpacing: 1.5),
-              ),
+              child: const Text("BATALKAN",
+                  style: TextStyle(
+                      color: Colors.white60,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.5)),
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+// --- CUSTOM PAINTER UNTUK GRAFIK NAIK TURUN ---
+
+class BreathingWavePainter extends CustomPainter {
+  final double animationValue;
+  final Color color;
+  final bool isGlow;
+
+  BreathingWavePainter(
+      {required this.animationValue, required this.color, this.isGlow = false});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = isGlow ? 8.0 : 4.0
+      ..strokeCap = StrokeCap.round;
+
+    if (isGlow) {
+      paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    }
+
+    final path = Path();
+    double baseY = size.height * 0.8; // Garis dasar grafik
+
+    path.moveTo(0, baseY);
+
+    // Menggambar kurva gelombang tunggal
+    // Puncak kurva (amplitude) dipengaruhi oleh animationValue
+    for (double i = 0; i <= size.width; i++) {
+      double relativeX = i / size.width;
+      // Sinus murni dari 0 ke Pi (setengah lingkaran)
+      double sinValue = math.sin(relativeX * math.pi);
+
+      // y dikurangi karena dalam koordinat Flutter, angka kecil lebih tinggi posisinya
+      double y = baseY - (sinValue * (animationValue * size.height * 0.6));
+
+      path.lineTo(i, y);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant BreathingWavePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue;
   }
 }

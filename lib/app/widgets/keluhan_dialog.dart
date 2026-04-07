@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/keluhan/controllers/keluhan_controller.dart';
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
-import 'package:pyhsiocare/app/widgets/validasi_dialog.dart';
+import 'package:PregMate/app/modules/keluhan/controllers/keluhan_controller.dart';
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/app/widgets/validasi_dialog.dart';
 
 class KeluhanDialog extends StatelessWidget {
   final KeluhanController controller = Get.find<KeluhanController>();

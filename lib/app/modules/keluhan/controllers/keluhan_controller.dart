@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:pyhsiocare/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
-import 'package:pyhsiocare/config/api_config.dart'; // Import config
+import 'package:PregMate/app/modules/rekomendasi/controllers/rekomendasi_controller.dart';
+import 'package:PregMate/config/api_config.dart'; // Import config
 
 class KeluhanController extends GetxController {
   var keluhanList = <Map<String, dynamic>>[].obs;

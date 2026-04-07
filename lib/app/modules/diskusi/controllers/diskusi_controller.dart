@@ -7,8 +7,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
-import 'package:pyhsiocare/app/modules/diskusi/models/post_model.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/app/modules/diskusi/models/post_model.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class DiskusiController extends GetxController {
 

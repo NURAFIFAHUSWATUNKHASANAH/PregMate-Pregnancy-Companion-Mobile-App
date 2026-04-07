@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/profil/controllers/profil_controller.dart';
+import 'package:PregMate/app/modules/profil/controllers/profil_controller.dart';
 
 class ProfilBinding extends Bindings {
   @override

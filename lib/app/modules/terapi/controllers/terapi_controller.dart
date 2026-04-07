@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:pyhsiocare/models/terapi_model.dart';
+import 'package:PregMate/config/api_config.dart';
+import 'package:PregMate/models/terapi_model.dart';
 import 'dart:convert';
 
 class TerapiController extends GetxController {

@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pyhsiocare/main.dart';
+import 'package:PregMate/main.dart';
 void main() {
   testWidgets('App launches and displays initial page', (WidgetTester tester) async {
     // Jalankan widget aplikasi menggunakan fungsi buildApp()

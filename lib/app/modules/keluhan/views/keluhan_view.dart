@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/widgets/keluhan_dialog.dart';
+import 'package:PregMate/app/widgets/keluhan_dialog.dart';
 import '../controllers/keluhan_controller.dart';
 
 

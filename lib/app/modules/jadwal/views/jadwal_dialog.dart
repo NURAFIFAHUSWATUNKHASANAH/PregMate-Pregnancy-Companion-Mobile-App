@@ -1,312 +1,272 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart'; // Untuk format Indonesia
-import 'package:http/http.dart' as http;
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:pyhsiocare/config/api_config.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../controllers/jadwal_controller.dart';
 
 class JadwalDialog extends StatefulWidget {
   const JadwalDialog({super.key});
 
   @override
-  _JadwalDialogState createState() => _JadwalDialogState();
+  State<JadwalDialog> createState() => _JadwalDialogState();
 }
 
 class _JadwalDialogState extends State<JadwalDialog> {
+  final controller = Get.find<JadwalController>();
+  final Color primaryColor = const Color(0xFF0C2D57);
+
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  final TextEditingController _pesanController = TextEditingController();
 
-  String? fcmToken;
-  String? userId;
+  final TextEditingController pesanController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    initializeDateFormatting('id_ID', null); // Inisialisasi format Indo
-    _initFCMToken();
-    _loadUserIdFromPrefs();
-  }
-
-  // --- LOGIKA ASLI TETAP DIPERTAHANKAN ---
-  Future<void> _initFCMToken() async {
-    try {
-      String? token = await FirebaseMessaging.instance.getToken();
-      setState(() => fcmToken = token);
-    } catch (e) {
-      debugPrint('Gagal mendapatkan FCM token: $e');
-    }
-  }
-
-  Future<void> _loadUserIdFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedUserId = prefs.getString('user_id');
-    if (savedUserId != null) {
-      setState(() => userId = savedUserId);
-    }
-  }
-
-  Future<void> _pickDate() async {
-    DateTime? pickedDate = await showDatePicker(
+  Future<void> pickDate() async {
+    final result = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
+      initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2030),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF0C2D57),
-            onPrimary: Colors.white,
-            onSurface: Color(0xFF0C2D57),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(primary: primaryColor),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
-    if (pickedDate != null) setState(() => selectedDate = pickedDate);
+
+    if (result != null) {
+      setState(() => selectedDate = result);
+    }
   }
 
-  Future<void> _pickTime() async {
-    TimeOfDay? pickedTime = await showTimePicker(
+  Future<void> pickTime() async {
+    final result = await showTimePicker(
       context: context,
-      initialTime: selectedTime ?? TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF0C2D57),
-            onSurface: Color(0xFF0C2D57),
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(primary: primaryColor),
           ),
-        ),
-        child: child!,
-      ),
+          child: child!,
+        );
+      },
     );
-    if (pickedTime != null) setState(() => selectedTime = pickedTime);
+
+    if (result != null) {
+      setState(() => selectedTime = result);
+    }
   }
 
-  Future<void> _submitJadwal() async {
+  void submit() {
     if (selectedDate == null || selectedTime == null) {
       Get.snackbar(
-        "Lengkapi Data", 
-        "Pilih tanggal dan waktu terlebih dahulu.",
-        backgroundColor: Colors.white,
-        colorText: const Color(0xFF0C2D57),
+        "Oops!",
+        "Silakan pilih tanggal dan waktu terlebih dahulu",
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(15),
       );
       return;
     }
-    
-    if (fcmToken == null || userId == null) {
-      Get.snackbar("Sistem Sibuk", "Gagal memproses data pengguna.");
-      return;
-    }
 
-    final tanggalFormatted = DateFormat('yyyy-MM-dd').format(selectedDate!);
-    final jamFormatted = selectedTime!.format(context);
-    final pesan = _pesanController.text.isNotEmpty 
-        ? _pesanController.text 
-        : "Saatnya melakukan sesi fisioterapi mandiri!";
-
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.jadwalUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "fcmToken": fcmToken,
-          "user_id": userId,
-          "tanggal": tanggalFormatted,
-          "jam": jamFormatted,
-          "pesan": pesan,
-          "dikirim": false,
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.back();
-        Get.snackbar("Berhasil", "Pengingat latihan telah dijadwalkan.",
-            backgroundColor: Colors.green.shade600, colorText: Colors.white);
-      } else {
-        Get.snackbar("Gagal", "Kesalahan server: ${response.statusCode}");
-      }
-    } catch (e) {
-      Get.snackbar("Error", "Gagal terhubung ke server.");
-    }
+    controller.submitJadwal(
+      selectedDate: selectedDate!,
+      selectedTime: selectedTime!,
+      pesan: pesanController.text.isEmpty
+          ? "Saatnya latihan!"
+          : pesanController.text,
+      context: context,
+    );
   }
 
-  // --- UI MODERN & STABIL ---
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF0C2D57);
-    const Color bgInput = Color(0xFFF8FAFC);
-    
-    final tanggalDisplay = selectedDate != null 
-        ? DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(selectedDate!) 
-        : 'Pilih Tanggal';
-    final waktuDisplay = selectedTime != null ? selectedTime!.format(context) : 'Atur Jam';
-
     return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 0,
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
-        // Fix: Material widget sebagai pembungkus utama konten dalam Dialog
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(28),
-          clipBehavior: Clip.antiAlias,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.notifications_active_rounded, color: primaryColor, size: 28),
-                    ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            Row(
+              children: [
+                Icon(Icons.calendar_today_rounded, color: primaryColor, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  "Buat Jadwal",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(height: 16),
-                  const Center(
-                    child: Text(
-                      "Set Pengingat",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primaryColor),
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Atur pengingat aktivitas latihan Anda secara efisien.",
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+
+            // Date & Time Selectors in a Row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSelectionTile(
+                    label: "Tanggal",
+                    value: selectedDate == null
+                        ? "Pilih"
+                        : DateFormat('dd MMM').format(selectedDate!),
+                    icon: Icons.event,
+                    onTap: pickDate,
                   ),
-                  const SizedBox(height: 24),
-                  
-                  _buildLabel("Kapan Anda akan berlatih?"),
-                  _buildActionTile(
-                    text: tanggalDisplay,
-                    icon: Icons.calendar_today_rounded,
-                    isSelected: selectedDate != null,
-                    onTap: _pickDate,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSelectionTile(
+                    label: "Waktu",
+                    value: selectedTime == null
+                        ? "Pilih"
+                        : selectedTime!.format(context),
+                    icon: Icons.access_time_rounded,
+                    onTap: pickTime,
                   ),
-                  const SizedBox(height: 12),
-                  _buildActionTile(
-                    text: waktuDisplay,
-                    icon: Icons.access_time_filled_rounded,
-                    isSelected: selectedTime != null,
-                    onTap: _pickTime,
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  _buildLabel("Pesan Pengingat"),
-                  TextField(
-                    controller: _pesanController,
-                    maxLines: 2,
-                    style: const TextStyle(fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: "Contoh: Ayo semangat latihan!",
-                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-                      filled: true,
-                      fillColor: bgInput,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 28),
-                  
-                  // Tombol Aksi
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Get.back(),
-                          child: Text("Batal", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _submitJadwal,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 0,
-                          ),
-                          child: const Text("Simpan", style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Message Field
+            Text(
+              "Pesan Pengingat",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
-      ),
-    );
-  }
-
-  Widget _buildActionTile({
-    required String text,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    const Color primaryColor = Color(0xFF0C2D57);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.05) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? primaryColor.withOpacity(0.2) : const Color(0xFFF1F5F9),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: isSelected ? primaryColor : Colors.grey[400], size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: isSelected ? primaryColor : Colors.grey[500],
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 14,
+            const SizedBox(height: 8),
+            TextField(
+              controller: pesanController,
+              decoration: InputDecoration(
+                hintText: "Contoh: Sesi Pagi Semangat!",
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[200]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: primaryColor, width: 1.5),
                 ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey[300], size: 18),
+
+            const SizedBox(height: 32),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text(
+                      "Batal",
+                      style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "Simpan Jadwal",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper widget untuk tile pilihan Tanggal/Jam
+  Widget _buildSelectionTile({
+    required String label,
+    required String value,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 16, color: primaryColor),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
           ],
         ),
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pyhsiocare/app/modules/histori/views/histori_view.dart';
-import 'package:pyhsiocare/app/modules/senam/views/senam_session_view.dart';
-import 'package:pyhsiocare/app/modules/senam/views/senam_validasi_view.dart';
+import 'package:PregMate/app/modules/histori/views/histori_view.dart';
+import 'package:PregMate/app/modules/senam/views/senam_session_view.dart';
+import 'package:PregMate/app/modules/senam/views/senam_validasi_view.dart';
 import '../controllers/senam_controller.dart';
 import '../../home/controllers/home_controller.dart';
 

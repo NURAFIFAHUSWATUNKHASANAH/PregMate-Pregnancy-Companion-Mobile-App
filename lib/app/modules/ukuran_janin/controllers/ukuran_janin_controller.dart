@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class UkuranJaninController extends GetxController {
   final box = GetStorage();
@@ -18,15 +18,60 @@ class UkuranJaninController extends GetxController {
   var role = "".obs;
 
   final Map<int, Map<String, dynamic>> perkembanganJanin = {
-    8: {"buah":"Raspberry","panjang":"1.6 cm","berat":"4 g","desc":"Organ vital mulai terbentuk"},
-    12: {"buah":"Plum","panjang":"5.4 cm","berat":"14 g","desc":"Refleks bayi mulai muncul"},
-    16: {"buah":"Alpukat","panjang":"11.6 cm","berat":"100 g","desc":"Otot dan tulang berkembang"},
-    20: {"buah":"Pisang","panjang":"25 cm","berat":"300 g","desc":"Gerakan bayi mulai terasa"},
-    24: {"buah":"Jagung","panjang":"30 cm","berat":"600 g","desc":"Paru-paru berkembang"},
-    28: {"buah":"Terong","panjang":"37.6 cm","berat":"1 kg","desc":"Otak berkembang pesat"},
-    32: {"buah":"Kelapa","panjang":"42.4 cm","berat":"1.7 kg","desc":"Bayi mulai memposisikan diri"},
-    36: {"buah":"Pepaya","panjang":"47.4 cm","berat":"2.6 kg","desc":"Bayi mulai turun ke panggul"},
-    40: {"buah":"Semangka","panjang":"51.2 cm","berat":"3.4 kg","desc":"Perkiraan waktu persalinan"},
+    8: {
+      "buah": "Anggur",
+      "panjang": "1.6 cm",
+      "berat": "4 g",
+      "desc": "Organ vital mulai terbentuk"
+    },
+    12: {
+      "buah": "Jeruk Kecil",
+      "panjang": "5.4 cm",
+      "berat": "14 g",
+      "desc": "Refleks bayi mulai muncul"
+    },
+    16: {
+      "buah": "Alpukat",
+      "panjang": "11.6 cm",
+      "berat": "100 g",
+      "desc": "Otot dan tulang berkembang"
+    },
+    20: {
+      "buah": "Pisang",
+      "panjang": "25 cm",
+      "berat": "300 g",
+      "desc": "Gerakan bayi mulai terasa"
+    },
+    24: {
+      "buah": "Jagung",
+      "panjang": "30 cm",
+      "berat": "600 g",
+      "desc": "Paru-paru berkembang"
+    },
+    28: {
+      "buah": "Terong",
+      "panjang": "37.6 cm",
+      "berat": "1 kg",
+      "desc": "Otak berkembang pesat"
+    },
+    32: {
+      "buah": "Kelapa Muda",
+      "panjang": "42.4 cm",
+      "berat": "1.7 kg",
+      "desc": "Bayi mulai memposisikan diri"
+    },
+    36: {
+      "buah": "Pepaya",
+      "panjang": "47.4 cm",
+      "berat": "2.6 kg",
+      "desc": "Bayi mulai turun ke panggul"
+    },
+    40: {
+      "buah": "Semangka",
+      "panjang": "51.2 cm",
+      "berat": "3.4 kg",
+      "desc": "Perkiraan waktu persalinan"
+    },
   };
 
   @override
@@ -80,7 +125,6 @@ class UkuranJaninController extends GetxController {
           berat.value = "-";
           deskripsi.value = "Data kehamilan belum tersedia";
         }
-
       } else {
         print("❌ Error fetch kehamilan: ${response.body}");
 
@@ -90,7 +134,6 @@ class UkuranJaninController extends GetxController {
         berat.value = "-";
         deskripsi.value = "Data kehamilan belum tersedia";
       }
-
     } catch (e) {
       print("❌ Exception: $e");
 

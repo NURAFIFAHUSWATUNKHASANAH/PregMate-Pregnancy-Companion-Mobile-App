@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/artikel_controller.dart';
-import 'package:pyhsiocare/app/modules/artikel/views/article_detail_view.dart';
+import 'package:PregMate/app/modules/artikel/views/article_detail_view.dart';
 
 class AllArtikelView extends StatelessWidget {
   final ArtikelController controller = Get.find<ArtikelController>();

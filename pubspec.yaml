@@ -1,4 +1,4 @@
-name: pyhsiocare
+name: PregMate
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -54,11 +54,15 @@ dependencies:
   google_mlkit_commons: ^0.11.0
   flutter_tts: ^3.5.2
   url_launcher: ^6.2.5
-
-flutter_icons:
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  http: ^1.2.0
+  
+flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/apk.jpeg" # ganti dengan path logo kamu
+  image_path: "assets/splash1.png"
+  
 dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_test:
@@ -90,6 +94,7 @@ flutter:
     - assets/model/model_pyshiocare.tflite
     - assets/model/label.txt
     - assets/model/scaler_params.json
+    - assets/bedong.mp4
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

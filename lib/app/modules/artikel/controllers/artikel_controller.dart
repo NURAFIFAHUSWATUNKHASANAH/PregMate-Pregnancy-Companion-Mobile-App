@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:pyhsiocare/models/artikel_model.dart';
-import 'package:pyhsiocare/config/api_config.dart';
+import 'package:PregMate/models/artikel_model.dart';
+import 'package:PregMate/config/api_config.dart';
 
 class ArtikelController extends GetxController {
   var artikels = <Artikel>[].obs;

@@ -5,6 +5,8 @@ import '../modules/berat_badan/bindings/berat_badan_binding.dart';
 import '../modules/berat_badan/views/berat_badan_view.dart';
 import '../modules/bottom/bindings/bottom_binding.dart';
 import '../modules/bottom/views/bottom_view.dart';
+import '../modules/craving/bindings/craving_binding.dart';
+import '../modules/craving/views/craving_view.dart';
 import '../modules/diskusi/bindings/diskusi_binding.dart';
 import '../modules/diskusi/views/diskusi_view.dart';
 import '../modules/edit_profil/bindings/edit_profil_binding.dart';
@@ -46,6 +48,8 @@ import '../modules/tentang/bindings/tentang_binding.dart';
 import '../modules/tentang/views/tentang_view.dart';
 import '../modules/terapi/bindings/terapi_binding.dart';
 import '../modules/terapi/views/terapi_view.dart';
+import '../modules/tips_newborn/bindings/tips_newborn_binding.dart';
+import '../modules/tips_newborn/views/tips_newborn_view.dart';
 import '../modules/ukuran_janin/bindings/ukuran_janin_binding.dart';
 import '../modules/ukuran_janin/views/ukuran_janin_view.dart';
 import '../modules/validasi_kehamilan/bindings/validasi_kehamilan_binding.dart';
@@ -210,6 +214,17 @@ class AppPages {
       name: _Paths.INFORMASI,
       page: () => InformasiView(),
       binding: InformasiBinding(),
+    ),
+    GetPage(
+      name: _Paths.CRAVING,
+      page: () => CravingView(),
+      binding: CravingBinding(),
+    ),
+    GetPage(
+      name: '/tips-newborn',
+      page: () => const TipsNewbornView(),
+      binding:
+          TipsNewbornBinding(), // 🔹 Ini yang memastikan controller di-initialize
     ),
   ];
 }
