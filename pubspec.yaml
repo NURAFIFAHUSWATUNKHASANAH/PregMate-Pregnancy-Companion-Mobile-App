@@ -95,6 +95,7 @@ flutter:
     - assets/model/label.txt
     - assets/model/scaler_params.json
     - assets/bedong.mp4
+    - assets/menyusui.mp4
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

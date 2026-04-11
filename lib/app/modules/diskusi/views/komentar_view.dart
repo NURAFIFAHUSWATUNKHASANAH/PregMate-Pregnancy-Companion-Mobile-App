@@ -7,11 +7,12 @@ import '../models/post_model.dart';
 class KomentarView extends StatelessWidget {
   final Post post;
 
-  KomentarView({required this.post});
+  KomentarView({super.key, required this.post});
 
   final DiskusiController controller = Get.find();
   final TextEditingController commentController = TextEditingController();
 
+  // Color Palette
   final Color primaryBlue = const Color(0xFF0C2D57);
   final Color secondaryBlue = const Color(0xFF4361EE);
   final Color bgLight = const Color(0xFFF8FAFC);
@@ -22,10 +23,6 @@ class KomentarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgLight,
-
-      /// =========================
-      /// APPBAR
-      /// =========================
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -43,55 +40,51 @@ class KomentarView extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-
         actions: [
+          // Menampilkan menu hanya jika ini postingan milik user yang login
           if (post.userId == controller.userId.value)
-            PopupMenuButton(
+            PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, color: primaryBlue),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) {
+                if (value == "edit") {
+                  _showEditDialog(context);
+                } else if (value == "delete") {
+                  _showDeleteConfirmation();
+                }
+              },
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: "edit",
-                  child: Text("Edit Diskusi"),
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined, size: 18, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text("Edit Diskusi"),
+                    ],
+                  ),
                 ),
                 const PopupMenuItem(
                   value: "delete",
-                  child: Text("Hapus Diskusi"),
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text("Hapus Diskusi",
+                          style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
                 ),
               ],
-              onSelected: (value) {
-                if (value == "edit") {
-                  _showEditDialog();
-                }
-
-                if (value == "delete") {
-                  Get.defaultDialog(
-                    title: "Hapus Diskusi",
-                    middleText: "Yakin ingin menghapus diskusi ini?",
-                    textConfirm: "Hapus",
-                    textCancel: "Batal",
-                    confirmTextColor: Colors.white,
-                    onConfirm: () {
-                      controller.deletePost(post.id);
-                      Get.back();
-                      Get.back();
-                    },
-                  );
-                }
-              },
             ),
         ],
       ),
-
-      /// =========================
-      /// BODY
-      /// =========================
       body: Column(
         children: [
-
           Expanded(
             child: Obx(() {
-
-              /// ambil post terbaru dari controller
+              // Reaktif terhadap perubahan data post di controller
               final updatedPost = controller.posts.firstWhere(
                 (p) => p.id == post.id,
                 orElse: () => post,
@@ -100,10 +93,7 @@ class KomentarView extends StatelessWidget {
               return ListView(
                 physics: const BouncingScrollPhysics(),
                 children: [
-
-                  /// ================================
-                  /// POST HEADER
-                  /// ================================
+                  /// POST DETAIL
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -117,57 +107,49 @@ class KomentarView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Row(
                           children: [
                             CircleAvatar(
-                              radius: 20,
+                              radius: 22,
                               backgroundColor: bgLight,
-                              backgroundImage:
-                                  updatedPost.userPhoto != null &&
-                                          updatedPost.userPhoto!.isNotEmpty
-                                      ? NetworkImage(
-                                          "${ApiConfig.baseUrl}/${updatedPost.userPhoto}")
-                                      : null,
+                              backgroundImage: (updatedPost.userPhoto != null &&
+                                      updatedPost.userPhoto!.isNotEmpty)
+                                  ? NetworkImage(
+                                      "${ApiConfig.baseUrl}/${updatedPost.userPhoto}")
+                                  : null,
                               child: (updatedPost.userPhoto == null ||
                                       updatedPost.userPhoto!.isEmpty)
                                   ? Icon(Icons.person, color: textGrey)
                                   : null,
                             ),
                             const SizedBox(width: 12),
-
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   updatedPost.user,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: textDark,
-                                    fontSize: 16,
-                                  ),
+                                      fontWeight: FontWeight.bold,
+                                      color: textDark,
+                                      fontSize: 16),
                                 ),
                                 Text(
                                   "Penanya Utama",
                                   style: TextStyle(
-                                    color: secondaryBlue,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                      color: secondaryBlue,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 16),
-
                         Text(
                           updatedPost.content,
                           style: TextStyle(
                               color: textDark, fontSize: 15, height: 1.5),
                         ),
-
                         if (updatedPost.image != null &&
                             updatedPost.image!.isNotEmpty)
                           Padding(
@@ -179,6 +161,13 @@ class KomentarView extends StatelessWidget {
                                 width: double.infinity,
                                 height: 220,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  height: 100,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image,
+                                      color: Colors.grey),
+                                ),
                               ),
                             ),
                           ),
@@ -186,9 +175,7 @@ class KomentarView extends StatelessWidget {
                     ),
                   ),
 
-                  /// ================================
-                  /// LABEL KOMENTAR
-                  /// ================================
+                  /// SECTION KOMENTAR
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
                     child: Row(
@@ -196,19 +183,17 @@ class KomentarView extends StatelessWidget {
                         Text(
                           "Komentar",
                           style: TextStyle(
-                            color: textDark,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                              color: textDark,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
                         ),
                         const SizedBox(width: 8),
-
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                              horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
                             color: secondaryBlue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             updatedPost.comments.length.toString(),
@@ -222,149 +207,85 @@ class KomentarView extends StatelessWidget {
                     ),
                   ),
 
-                  /// ================================
                   /// LIST KOMENTAR
-                  /// ================================
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: updatedPost.comments.length,
-                    itemBuilder: (context, index) {
-
-                      final c = updatedPost.comments[index];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: bgLight,
-                              backgroundImage:
-                                  c.userPhoto != null &&
-                                          c.userPhoto!.isNotEmpty
-                                      ? NetworkImage(
-                                          "${ApiConfig.baseUrl}/${c.userPhoto}")
-                                      : null,
-                              child: (c.userPhoto == null ||
-                                      c.userPhoto!.isEmpty)
-                                  ? Icon(Icons.person,
-                                      size: 16, color: textGrey)
-                                  : null,
-                            ),
-
-                            const SizedBox(width: 12),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-
-                                  Text(
-                                    c.user,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: textDark,
-                                        fontSize: 14),
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  Text(
-                                    c.content,
-                                    style: TextStyle(
-                                        color: textGrey,
-                                        fontSize: 14,
-                                        height: 1.4),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                  if (updatedPost.comments.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: Center(
+                        child: Text(
+                            "Belum ada tanggapan.\nJadilah yang pertama!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: textGrey)),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: updatedPost.comments.length,
+                      itemBuilder: (context, index) {
+                        final c = updatedPost.comments[index];
+                        return _buildCommentItem(c);
+                      },
+                    ),
+                  const SizedBox(
+                      height: 100), // Spasi agar tidak tertutup input
                 ],
               );
             }),
           ),
+        ],
+      ),
 
-          /// ================================
-          /// INPUT KOMENTAR
-          /// ================================
-          Container(
-            padding: EdgeInsets.fromLTRB(
-                20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
+      /// INPUT BAR
+      bottomSheet: _buildInputBar(context),
+    );
+  }
 
-            child: Row(
+  Widget _buildCommentItem(dynamic c) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: bgLight,
+            backgroundImage: (c.userPhoto != null && c.userPhoto!.isNotEmpty)
+                ? NetworkImage("${ApiConfig.baseUrl}/${c.userPhoto}")
+                : null,
+            child: (c.userPhoto == null || c.userPhoto!.isEmpty)
+                ? Icon(Icons.person, size: 16, color: textGrey)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: bgLight,
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-
-                    child: TextField(
-                      controller: commentController,
-                      decoration: InputDecoration(
-                        hintText: "Berikan tanggapan Bunda...",
-                        hintStyle: TextStyle(
-                            color: textGrey.withOpacity(0.6), fontSize: 14),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
+                Text(
+                  c.user,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: textDark,
+                      fontSize: 14),
                 ),
-
-                const SizedBox(width: 12),
-
-                GestureDetector(
-                  onTap: () async {
-
-                    if (commentController.text.isNotEmpty) {
-
-                      await controller.addComment(
-                        post.id,
-                        commentController.text,
-                      );
-
-                      commentController.clear();
-                    }
-                  },
-
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundColor: primaryBlue,
-                    child: const Icon(
-                      Icons.send_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
+                const SizedBox(height: 4),
+                Text(
+                  c.content,
+                  style: TextStyle(color: textGrey, fontSize: 14, height: 1.4),
                 ),
               ],
             ),
@@ -374,47 +295,139 @@ class KomentarView extends StatelessWidget {
     );
   }
 
-  /// =========================
-  /// EDIT DIALOG
-  /// =========================
-  void _showEditDialog() {
-
-    TextEditingController editController =
-        TextEditingController(text: post.content);
-
-    Get.defaultDialog(
-      title: "Edit Diskusi",
-
-      content: Column(
+  Widget _buildInputBar(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -5)),
+        ],
+      ),
+      child: Row(
         children: [
-
-          TextField(
-            controller: editController,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              hintText: "Edit diskusi...",
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: bgLight,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              ),
+              child: TextField(
+                controller: commentController,
+                maxLines: null,
+                decoration: InputDecoration(
+                  hintText: "Berikan tanggapan Bunda...",
+                  hintStyle:
+                      TextStyle(color: textGrey.withOpacity(0.6), fontSize: 14),
+                  border: InputBorder.none,
+                ),
+              ),
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          ElevatedButton(
-            onPressed: () {
-
-              controller.editPost(
-                post.id,
-                editController.text,
-              );
-
-              Get.back();
-              Get.back();
-
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () async {
+              if (commentController.text.trim().isNotEmpty) {
+                FocusScope.of(context).unfocus();
+                await controller.addComment(
+                    post.id, commentController.text.trim());
+                commentController.clear();
+              }
             },
-
-            child: const Text("Simpan"),
+            child: CircleAvatar(
+              radius: 24,
+              backgroundColor: primaryBlue,
+              child:
+                  const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    Get.defaultDialog(
+      title: "Hapus Diskusi",
+      middleText:
+          "Yakin ingin menghapus diskusi ini? Tindakan ini tidak dapat dibatalkan.",
+      textConfirm: "Hapus",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
+      onConfirm: () {
+        controller.deletePost(post.id);
+        Get.back(); // Tutup dialog
+        Get.back(); // Kembali ke list diskusi
+      },
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    final TextEditingController editController =
+        TextEditingController(text: post.content);
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Edit Postingan",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: primaryBlue)),
+            const SizedBox(height: 15),
+            TextField(
+              controller: editController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: "Tulis perubahan...",
+                filled: true,
+                fillColor: bgLight,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () {
+                  if (editController.text.trim().isNotEmpty) {
+                    controller.editPost(post.id, editController.text.trim());
+                    Get.back();
+                  }
+                },
+                child: const Text("Simpan Perubahan",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

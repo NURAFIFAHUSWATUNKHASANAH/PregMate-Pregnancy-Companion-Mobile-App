@@ -22,6 +22,8 @@ import '../modules/informasi/bindings/informasi_binding.dart';
 import '../modules/informasi/views/informasi_view.dart';
 import '../modules/jadwal/bindings/jadwal_binding.dart';
 import '../modules/jadwal/views/jadwal_dialog.dart';
+import '../modules/kalkulator_bersalin/bindings/kalkulator_bersalin_binding.dart';
+import '../modules/kalkulator_bersalin/views/kalkulator_bersalin_view.dart';
 import '../modules/keluhan/bindings/keluhan_binding.dart';
 import '../modules/keluhan/views/keluhan_view.dart';
 import '../modules/login/bindings/login_binding.dart';
@@ -44,6 +46,10 @@ import '../modules/senam_ai/bindings/senam_ai_binding.dart';
 import '../modules/senam_ai/views/senam_ai_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
+import '../modules/tas_bersalin/bindings/tas_bersalin_binding.dart';
+import '../modules/tas_bersalin/bindings/tas_bersalin_binding.dart';
+import '../modules/tas_bersalin/views/tas_bersalin_view.dart';
+import '../modules/tas_bersalin/views/tas_bersalin_view.dart';
 import '../modules/tentang/bindings/tentang_binding.dart';
 import '../modules/tentang/views/tentang_view.dart';
 import '../modules/terapi/bindings/terapi_binding.dart';
@@ -225,6 +231,16 @@ class AppPages {
       page: () => const TipsNewbornView(),
       binding:
           TipsNewbornBinding(), // 🔹 Ini yang memastikan controller di-initialize
+    ),
+    GetPage(
+      name: _Paths.TAS_BERSALIN,
+      page: () => const TasBersalinView(),
+      binding: TasBersalinBinding(),
+    ),
+    GetPage(
+      name: _Paths.KALKULATOR_BERSALIN,
+      page: () => const KalkulatorBersalinView(),
+      binding: KalkulatorBersalinBinding(),
     ),
   ];
 }

@@ -35,6 +35,8 @@ abstract class Routes {
   static const INFORMASI = _Paths.INFORMASI;
   static const CRAVING = _Paths.CRAVING;
   static const TIPS_NEWBORN = _Paths.TIPS_NEWBORN;
+  static const TAS_BERSALIN = _Paths.TAS_BERSALIN;
+  static const KALKULATOR_BERSALIN = _Paths.KALKULATOR_BERSALIN;
 }
 
 abstract class _Paths {
@@ -71,4 +73,6 @@ abstract class _Paths {
   static const INFORMASI = '/informasi';
   static const CRAVING = '/craving';
   static const TIPS_NEWBORN = '/tips-newborn';
+  static const TAS_BERSALIN = '/tas-bersalin';
+  static const KALKULATOR_BERSALIN = '/kalkulator-bersalin';
 }

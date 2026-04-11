@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:PregMate/app/modules/tas_bersalin/views/tas_bersalin_view.dart';
 import 'package:PregMate/app/modules/tips_newborn/views/tips_newborn_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -322,22 +323,26 @@ class HomeView extends GetView<HomeController> {
                           icon: Icons.checklist_rounded,
                           color: const Color(0xFFE91E63),
                           onTap: () {
-                            Get.snackbar(
-                              "Coming Soon 🚧",
-                              "Fitur persiapan persalinan sedang dikembangkan",
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
+                            Get.toNamed(Routes.TAS_BERSALIN);
                           },
                         ),
-_buildGridMenu(
-  label: "Tips Newborn",
-  icon: Icons.baby_changing_station_rounded,
-  color: const Color(0xFF00BCD4),
-  onTap: () {
-    // Navigasi menggunakan route name
-    Get.toNamed('/tips-newborn');
-  },
-),
+                        _buildGridMenu(
+                          label: "Tips Newborn",
+                          icon: Icons.baby_changing_station_rounded,
+                          color: const Color(0xFF00BCD4),
+                          onTap: () {
+                            // Navigasi menggunakan route name
+                            Get.toNamed('/tips-newborn');
+                          },
+                        ),
+                        _buildGridMenu(
+                          label: "Dana Bersalin",
+                          icon: Icons.pregnant_woman_rounded,
+                          color: const Color(0xFFFF8E9E),
+                          onTap: () {
+                            Get.toNamed(Routes.KALKULATOR_BERSALIN);
+                          },
+                        ),
                         // _buildGridMenu(
                         //   label: "Tips Perawatan Newborn",
                         //   icon: Icons.baby_changing_station_rounded,

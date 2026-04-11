@@ -263,29 +263,38 @@ class DiskusiController extends GetxController {
   /// =========================
   /// EDIT (ONLY OWNER SAFE)
   /// =========================
-  Future<void> editPost(String postId, String content) async {
-    try {
+Future<void> editPost(String postId, String content) async {
+  try {
+    final token = getToken();
 
-      final token = getToken();
+    var request = http.MultipartRequest(
+      "PUT",
+      Uri.parse("${ApiConfig.diskusiUrl}/$postId"),
+    );
 
-      final response = await http.put(
-        Uri.parse("${ApiConfig.diskusiUrl}/$postId"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-          "user_id": userId.value,
-        },
-        body: jsonEncode({
-          "content": content,
-        }),
+    request.headers["Authorization"] = "Bearer $token";
+
+    request.fields["content"] = content;
+    request.fields["user_id"] = userId.value;
+
+    // 🔥 kalau user pilih gambar baru
+    if (selectedImage.value != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "image",
+          selectedImage.value!.path,
+        ),
       );
-
-      if (response.statusCode == 200) {
-        fetchPosts();
-      }
-
-    } catch (e) {
-      print("ERROR EDIT: $e");
     }
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      selectedImage.value = null;
+      fetchPosts();
+    }
+  } catch (e) {
+    print("ERROR EDIT: $e");
   }
+}
 }

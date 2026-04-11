@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:PregMate/config/api_config.dart';
-
 import '../controllers/diskusi_controller.dart';
 import '../models/post_model.dart';
 import 'komentar_view.dart';
+import 'dart:ui';
 
+// --- UTILITY FUNCTIONS ---
 String formatTanggal(String isoDate) {
   try {
     final date = DateTime.parse(isoDate).toLocal();
     final now = DateTime.now();
-
     final diff = now.difference(date);
 
-    if (diff.inSeconds < 60) {
-      return "Baru saja";
-    } else if (diff.inMinutes < 60) {
-      return "${diff.inMinutes} menit lalu";
-    } else if (diff.inHours < 24) {
-      return "${diff.inHours} jam lalu";
-    } else if (diff.inDays < 7) {
-      return "${diff.inDays} hari lalu";
-    } else {
-      return "${date.day} ${_bulanIndo(date.month)} ${date.year}";
-    }
+    if (diff.inSeconds < 60) return "Baru saja";
+    if (diff.inMinutes < 60) return "${diff.inMinutes}m lalu";
+    if (diff.inHours < 24) return "${diff.inHours}j lalu";
+    if (diff.inDays < 7) return "${diff.inDays}h lalu";
+    return "${date.day} ${_bulanIndo(date.month)} ${date.year}";
   } catch (e) {
     return "";
   }
@@ -53,10 +47,12 @@ class DiskusiView extends StatelessWidget {
 
   final DiskusiController controller = Get.put(DiskusiController());
 
+  // Modern Color Palette
   final Color primaryBlue = const Color(0xFF0C2D57);
-  final Color secondaryBlue = const Color(0xFF4361EE);
-  final Color bgLight = const Color(0xFFF8FAFC);
-  final Color textDark = const Color(0xFF1E293B);
+  final Color accentBlue = const Color(0xFF4361EE);
+  final Color softPink = const Color(0xFFFF8E9E);
+  final Color bgLight = const Color(0xFFFBFDFF);
+  final Color textDark = const Color(0xFF0F172A);
   final Color textGrey = const Color(0xFF64748B);
 
   @override
@@ -67,85 +63,92 @@ class DiskusiView extends StatelessWidget {
         backgroundColor: bgLight,
         appBar: AppBar(
           elevation: 0,
+          backgroundColor: Colors.white.withOpacity(0.8),
+          surfaceTintColor: Colors.transparent,
+          flexibleSpace: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           centerTitle: false,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
           title: Text(
             "Forum Bunda",
             style: TextStyle(
               color: primaryBlue,
-              fontSize: 22,
+              fontSize: 24,
               fontWeight: FontWeight.w900,
-              letterSpacing: -0.8,
+              letterSpacing: -1,
             ),
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.search_rounded, color: primaryBlue),
-              onPressed: () {},
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: primaryBlue.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.search_rounded, color: primaryBlue, size: 22),
+                onPressed: () {},
+              ),
             ),
           ],
           bottom: TabBar(
             labelColor: primaryBlue,
+            unselectedLabelColor: textGrey,
             indicatorColor: primaryBlue,
+            indicatorWeight: 3,
+            indicatorSize: TabBarIndicatorSize.label,
+            dividerColor: Colors.transparent,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             tabs: const [
-              Tab(text: "Semua Diskusi"),
+              Tab(text: "Eksplorasi"),
               Tab(text: "Diskusi Saya"),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            /// =====================
-            /// TAB 1: SEMUA DISKUSI (LIST VIEW)
-            /// =====================
+            // TAB 1: SEMUA DISKUSI
             Obx(() {
-              if (controller.isLoading.value) {
-                return _buildShimmerLoading();
-              }
-              return ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                physics: const BouncingScrollPhysics(),
-                itemCount: controller.posts.length,
-                itemBuilder: (context, index) {
-                  final post = controller.posts[index];
-                  return _buildPostCard(post);
-                },
+              if (controller.isLoading.value) return _buildShimmerLoading();
+              return RefreshIndicator(
+                onRefresh: () async => controller.fetchPosts(),
+                color: primaryBlue,
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: controller.posts.length,
+                  itemBuilder: (context, index) =>
+                      _buildPostCard(controller.posts[index]),
+                ),
               );
             }),
 
-            /// =====================
-            /// TAB 2: DISKUSI SAYA (GRID VIEW - ALA IG)
-            /// =====================
+            // TAB 2: DISKUSI SAYA
             Obx(() {
-              if (controller.isLoading.value) {
-                return _buildShimmerLoading();
-              }
-
+              if (controller.isLoading.value) return _buildShimmerLoading();
               return Column(
                 children: [
                   _buildPostInput(),
                   Expanded(
                     child: controller.myPosts.isEmpty
-                        ? const Center(
-                            child: Text("Belum ada diskusi yang Anda buat"),
-                          )
+                        ? _buildEmptyState()
                         : GridView.builder(
                             padding: const EdgeInsets.all(16),
                             physics: const BouncingScrollPhysics(),
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3, // 3 kolom kesamping
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                              childAspectRatio: 1, // Kotak sempurna
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1,
                             ),
                             itemCount: controller.myPosts.length,
-                            itemBuilder: (context, index) {
-                              final post = controller.myPosts[index];
-                              return _buildGridPostCard(post);
-                            },
+                            itemBuilder: (context, index) =>
+                                _buildGridPostCard(controller.myPosts[index]),
                           ),
                   )
                 ],
@@ -157,62 +160,87 @@ class DiskusiView extends StatelessWidget {
     );
   }
 
-  /// =========================
-  /// GRID POST CARD (KHUSUS TAB DISKUSI SAYA)
-  /// =========================
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.chat_bubble_outline_rounded,
+              size: 64, color: textGrey.withOpacity(0.3)),
+          const SizedBox(height: 16),
+          Text("Belum ada diskusi nih, Bun",
+              style: TextStyle(color: textGrey, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  // --- TAB DISKUSI SAYA: GRID CARD ---
   Widget _buildGridPostCard(Post post) {
     return GestureDetector(
-      onTap: () {
-        Get.to(
-          () => KomentarView(post: post),
-          transition: Transition.cupertino,
-        );
-      },
+      onTap: () => Get.to(() => KomentarView(post: post),
+          transition: Transition.cupertino),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black.withOpacity(0.05)),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Prioritas tampilkan gambar, jika tidak ada tampilkan teks konten
               post.image != null && post.image!.isNotEmpty
-                  ? Image.network(
-                      "${ApiConfig.baseUrl}${post.image}",
-                      fit: BoxFit.cover,
-                    )
+                  ? Image.network("${ApiConfig.baseUrl}${post.image}",
+                      fit: BoxFit.cover)
                   : Container(
-                      padding: const EdgeInsets.all(8),
-                      color: secondaryBlue.withOpacity(0.05),
+                      padding: const EdgeInsets.all(10),
+                      color: accentBlue.withOpacity(0.1),
                       child: Center(
                         child: Text(
                           post.content,
                           maxLines: 4,
-                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10, color: textDark),
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: primaryBlue,
+                              fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
-
-              // Overlay Icon Like di pojok bawah
               Positioned(
-                bottom: 4,
-                left: 6,
-                child: Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Colors.pink, size: 12),
-                    const SizedBox(width: 2),
-                    Text(
-                      post.likes.toString(),
-                      style: const TextStyle(
-                          fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.6),
+                          Colors.transparent
+                        ]),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.favorite_rounded,
+                          color: Colors.white, size: 10),
+                      const SizedBox(width: 4),
+                      Text(post.likes.toString(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -222,23 +250,19 @@ class DiskusiView extends StatelessWidget {
     );
   }
 
-  /// =========================
-  /// INPUT POST
-  /// =========================
+  // --- INPUT POST CARD ---
   Widget _buildPostInput() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: primaryBlue.withOpacity(0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
+              color: primaryBlue.withOpacity(0.08),
+              blurRadius: 30,
+              offset: const Offset(0, 10))
         ],
       ),
       child: Column(
@@ -248,33 +272,25 @@ class DiskusiView extends StatelessWidget {
                   children: [
                     Container(
                       margin: const EdgeInsets.only(bottom: 12),
-                      height: 180,
+                      height: 160,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         image: DecorationImage(
-                          image: FileImage(controller.selectedImage.value!),
-                          fit: BoxFit.cover,
-                        ),
+                            image: FileImage(controller.selectedImage.value!),
+                            fit: BoxFit.cover),
                       ),
                     ),
                     Positioned(
-                      right: 8,
-                      top: 8,
-                      child: GestureDetector(
-                        onTap: () => controller.selectedImage.value = null,
-                        child: CircleAvatar(
-                          radius: 14,
-                          backgroundColor: Colors.black.withOpacity(0.5),
-                          child: const Icon(Icons.close,
-                              size: 16, color: Colors.white),
-                        ),
-                      ),
-                    ),
+                        right: 8,
+                        top: 8,
+                        child: _buildCloseBtn(
+                            () => controller.selectedImage.value = null)),
                   ],
                 )
               : const SizedBox()),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Obx(() => CircleAvatar(
                     radius: 22,
@@ -284,16 +300,18 @@ class DiskusiView extends StatelessWidget {
                             "${ApiConfig.baseUrl}/${controller.fotoUser.value}")
                         : null,
                     child: controller.fotoUser.value.isEmpty
-                        ? Icon(Icons.person_rounded, color: textGrey)
+                        ? Icon(Icons.person_2_rounded, color: textGrey)
                         : null,
                   )),
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
                   controller: controller.postController,
+                  style:
+                      TextStyle(color: textDark, fontWeight: FontWeight.w500),
                   decoration: InputDecoration(
-                    hintText: "Apa kabar hari ini, Bunda?",
-                    hintStyle: TextStyle(color: textGrey.withOpacity(0.6)),
+                    hintText: "Apa yang Bunda pikirkan?",
+                    hintStyle: TextStyle(color: textGrey.withOpacity(0.5)),
                     border: InputBorder.none,
                   ),
                   maxLines: null,
@@ -301,28 +319,44 @@ class DiskusiView extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const Divider(height: 24, thickness: 0.5),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton.filledTonal(
-                onPressed: () => controller.pickImage(),
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                style: IconButton.styleFrom(foregroundColor: secondaryBlue),
+              GestureDetector(
+                onTap: () => controller.pickImage(),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: accentBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Row(
+                    children: [
+                      Icon(Icons.image_outlined, size: 20, color: accentBlue),
+                      const SizedBox(width: 8),
+                      Text("Foto",
+                          style: TextStyle(
+                              color: accentBlue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13)),
+                    ],
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () => controller.addPost(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryBlue,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 child: const Text("Posting",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontWeight: FontWeight.w800)),
               ),
             ],
           ),
@@ -331,90 +365,69 @@ class DiskusiView extends StatelessWidget {
     );
   }
 
-  /// =========================
-  /// POST CARD (UNTUK TAB SEMUA DISKUSI)
-  /// =========================
+  // --- SEMUA DISKUSI: MAIN CARD ---
   Widget _buildPostCard(Post post) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.02)),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+              color: primaryBlue.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 8))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            leading: CircleAvatar(
-              backgroundImage:
-                  post.userPhoto != null && post.userPhoto!.isNotEmpty
-                      ? NetworkImage("${ApiConfig.baseUrl}/${post.userPhoto}")
-                      : null,
-              child: (post.userPhoto == null || post.userPhoto!.isEmpty)
-                  ? const Icon(Icons.person)
-                  : null,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: softPink, width: 2)),
+              child: CircleAvatar(
+                radius: 20,
+                backgroundImage:
+                    post.userPhoto != null && post.userPhoto!.isNotEmpty
+                        ? NetworkImage("${ApiConfig.baseUrl}/${post.userPhoto}")
+                        : null,
+                child: (post.userPhoto == null || post.userPhoto!.isEmpty)
+                    ? const Icon(Icons.person)
+                    : null,
+              ),
             ),
             title: Text(post.user,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(
-              formatTanggal(post.tanggal),
-              style: const TextStyle(fontSize: 11),
-            ),
+                style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: textDark,
+                    fontSize: 15)),
+            subtitle: Text(formatTanggal(post.tanggal),
+                style: TextStyle(fontSize: 11, color: textGrey)),
             trailing: post.userId == controller.userId.value
-                ? PopupMenuButton(
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: "edit",
-                        child: Text("Edit"),
-                      ),
-                      const PopupMenuItem(
-                        value: "delete",
-                        child: Text("Hapus"),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      if (value == "delete") {
-                        Get.defaultDialog(
-                          title: "Hapus Post",
-                          middleText: "Yakin ingin menghapus postingan?",
-                          textConfirm: "Hapus",
-                          textCancel: "Batal",
-                          confirmTextColor: Colors.white,
-                          onConfirm: () {
-                            controller.deletePost(post.id);
-
-                            Get.back();
-                          },
-                        );
-                      }
-
-                      if (value == "edit") {
-                        _showEditDialog(post);
-                      }
-                    },
-                  )
-                : const SizedBox(),
+                ? _buildPostMenu(post)
+                : null,
           ),
           if (post.content.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Text(
-                post.content,
-                style: TextStyle(color: textDark, height: 1.4),
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Text(post.content,
+                  style: TextStyle(
+                      color: textDark.withOpacity(0.8),
+                      fontSize: 15,
+                      height: 1.5)),
             ),
           if (post.image != null && post.image!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  "${ApiConfig.baseUrl}${post.image}",
-                  width: double.infinity,
-                  height: 250,
-                  fit: BoxFit.cover,
-                ),
+                borderRadius: BorderRadius.circular(24),
+                child: Image.network("${ApiConfig.baseUrl}${post.image}",
+                    width: double.infinity, height: 280, fit: BoxFit.cover),
               ),
             ),
           Padding(
@@ -423,24 +436,19 @@ class DiskusiView extends StatelessWidget {
               children: [
                 _buildActionBtn(
                   icon: post.likedBy.contains(controller.userId.value)
-                      ? Icons.favorite
-                      : Icons.favorite_border,
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_outline_rounded,
                   label: post.likes.toString(),
-                  color: Colors.pink,
+                  color: Colors.pinkAccent,
                   onTap: () => controller.likePost(post.id),
                 ),
                 const SizedBox(width: 12),
                 _buildActionBtn(
-                  icon: Icons.mode_comment_outlined,
+                  icon: Icons.chat_bubble_outline_rounded,
                   label: "Diskusi",
-                  color: secondaryBlue,
-                  onTap: () {
-                    Get.to(
-                      () => KomentarView(post: post),
-                      transition: Transition.cupertino,
-                      duration: const Duration(milliseconds: 400),
-                    );
-                  },
+                  color: accentBlue,
+                  onTap: () => Get.to(() => KomentarView(post: post),
+                      transition: Transition.cupertino),
                 ),
               ],
             ),
@@ -450,31 +458,79 @@ class DiskusiView extends StatelessWidget {
     );
   }
 
-  Widget _buildActionBtn({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
+  Widget _buildPostMenu(Post post) {
+    return PopupMenuButton(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      icon: Icon(Icons.more_horiz_rounded, color: textGrey),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+            value: "edit",
+            child: Row(children: [
+              Icon(Icons.edit_outlined, size: 18),
+              SizedBox(width: 8),
+              Text("Edit")
+            ])),
+        const PopupMenuItem(
+            value: "delete",
+            child: Row(children: [
+              Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Hapus", style: TextStyle(color: Colors.red))
+            ])),
+      ],
+      onSelected: (val) {
+        if (val == "delete") {
+          Get.defaultDialog(
+            title: "Hapus Diskusi?",
+            middleText: "Postingan Bunda akan dihapus permanen.",
+            textConfirm: "Hapus",
+            textCancel: "Batal",
+            confirmTextColor: Colors.white,
+            buttonColor: Colors.red,
+            onConfirm: () {
+              controller.deletePost(post.id);
+              Get.back();
+            },
+          );
+        } else {
+          _showEditDialog(post);
+        }
+      },
+    );
+  }
+
+  Widget _buildActionBtn(
+      {required IconData icon,
+      required String label,
+      required Color color,
+      required VoidCallback onTap}) {
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(16),
-        ),
+            color: color.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(20)),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 6),
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 8),
             Text(label,
                 style: TextStyle(
-                    color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+                    color: color, fontWeight: FontWeight.w900, fontSize: 13)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCloseBtn(VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: CircleAvatar(
+          radius: 14,
+          backgroundColor: Colors.black.withOpacity(0.5),
+          child: const Icon(Icons.close, size: 16, color: Colors.white)),
     );
   }
 
@@ -483,30 +539,11 @@ class DiskusiView extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: 3,
       itemBuilder: (_, __) => Container(
-        height: 200,
-        margin: const EdgeInsets.only(bottom: 16),
+        height: 250,
+        margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Opacity(
-          opacity: 0.5,
-          child: Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(backgroundColor: bgLight),
-                title: Container(height: 10, color: bgLight),
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                      color: bgLight, borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-        ),
+            color: Colors.white, borderRadius: BorderRadius.circular(30)),
+        child: const Center(child: CircularProgressIndicator()),
       ),
     );
   }
@@ -514,31 +551,73 @@ class DiskusiView extends StatelessWidget {
   void _showEditDialog(Post post) {
     TextEditingController editController =
         TextEditingController(text: post.content);
+    controller.selectedImage.value = null;
 
-    Get.defaultDialog(
-      title: "Edit Diskusi",
-      content: Column(
-        children: [
-          TextField(
-            controller: editController,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              hintText: "Edit diskusi...",
-            ),
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Edit Diskusi",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: primaryBlue)),
+              const SizedBox(height: 20),
+              Obx(() => controller.selectedImage.value != null
+                  ? Container(
+                      height: 150,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          image: DecorationImage(
+                              image: FileImage(controller.selectedImage.value!),
+                              fit: BoxFit.cover)),
+                    )
+                  : const SizedBox()),
+              TextField(
+                controller: editController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: bgLight,
+                  hintText: "Edit pesan Bunda...",
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  IconButton.filledTonal(
+                      onPressed: () => controller.pickImage(),
+                      icon: const Icon(Icons.add_a_photo_rounded)),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.editPost(post.id, editController.text);
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBlue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    child: const Text("Simpan Perubahan"),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
-              controller.editPost(
-                post.id,
-                editController.text,
-              );
-
-              Get.back();
-            },
-            child: const Text("Simpan"),
-          ),
-        ],
+        ),
       ),
     );
   }

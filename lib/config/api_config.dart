@@ -16,7 +16,7 @@ class ApiConfig {
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'http://10.12.13.213:5000';
+    _baseUrl = 'http://10.1.126.246:5000';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------
@@ -65,4 +65,11 @@ static String deleteBabyNameFavoriteUrl(String name) => '$_baseUrl/babyname/favo
 
 // ---------------- Mood / Recommendation ----------------
 static String get moodRecommendationUrl => '$_baseUrl/ai/recommendation';
+
+// ---------------- KALKULATOR ----------------
+static String get kalkulatorSaveUrl => '$_baseUrl/kalkulator/save';
+static String get kalkulatorDashboardUrl => '$_baseUrl/kalkulator/dashboard';
+static String get kalkulatorTabungUrl => '$_baseUrl/kalkulator/tabung';
+static String get kalkulatorPengeluaranUrl => '$_baseUrl/kalkulator/pengeluaran';
+
 }
