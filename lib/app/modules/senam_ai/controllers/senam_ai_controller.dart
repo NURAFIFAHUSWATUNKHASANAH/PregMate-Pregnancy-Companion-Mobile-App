@@ -167,6 +167,12 @@ class SenamAiController extends GetxController {
   Future<void> simpanHistori(double akurasi, String label) async {
     final userId = box.read('user_id');
     final token = box.read('auth_token');
+    final kehamilanId = box.read('kehamilan_id');
+
+    if (kehamilanId == null) {
+      Get.snackbar("Error", "Kehamilan aktif tidak ditemukan");
+      return;
+    }
 
     if (userId == null || token == null || token.toString().isEmpty) {
       Get.snackbar("Error", "User ID atau token tidak ditemukan");
@@ -175,6 +181,7 @@ class SenamAiController extends GetxController {
 
     final body = {
       "user_id": userId,
+      "kehamilan_id": kehamilanId,
       "label": label,
       "accuracy": akurasi,
       "tanggal": DateTime.now().toIso8601String(),
@@ -196,19 +203,16 @@ class SenamAiController extends GetxController {
         await historiController.refreshHistory();
 
         Get.snackbar("Sukses", "Histori latihan tersimpan");
-
       } else if (response.statusCode == 401) {
         /// 🔐 TOKEN EXPIRED
         box.erase();
         Get.offAllNamed('/login');
-
       } else {
         Get.snackbar(
           "Gagal",
           "Gagal menyimpan histori: ${response.body}",
         );
       }
-
     } catch (e) {
       Get.snackbar("Error", "Terjadi kesalahan: $e");
     }

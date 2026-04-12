@@ -234,6 +234,61 @@ class HomeView extends GetView<HomeController> {
                               ],
                             );
                           }),
+                          Obx(() {
+  if (controller.statusKehamilan.value == "active" &&
+      controller.usiaMinggu.value >= 40) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          onPressed: () {
+            Get.defaultDialog(
+              title: "Konfirmasi",
+              middleText: "Apakah kehamilan sudah selesai?",
+              confirm: ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                  controller.endPregnancy();
+                },
+                child: const Text("Ya"),
+              ),
+              cancel: TextButton(
+                onPressed: () => Get.back(),
+                child: const Text("Batal"),
+              ),
+            );
+          },
+          child: const Text("Akhiri Kehamilan"),
+        ),
+      ),
+    );
+  }
+
+  if (controller.statusKehamilan.value == "finished") {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            Get.toNamed('/validasi-kehamilan');
+          },
+          child: const Text("Mulai Kehamilan Baru"),
+        ),
+      ),
+    );
+  }
+
+  return const SizedBox();
+})
                         ],
                       ),
                     );

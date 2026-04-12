@@ -40,6 +40,8 @@ import '../modules/recipe/bindings/recipe_binding.dart';
 import '../modules/recipe/views/recipe_view.dart';
 import '../modules/register/bindings/register_binding.dart';
 import '../modules/register/views/register_view.dart';
+import '../modules/riwayat_kehamilan/bindings/riwayat_kehamilan_binding.dart';
+import '../modules/riwayat_kehamilan/views/riwayat_kehamilan_view.dart';
 import '../modules/senam/bindings/senam_binding.dart';
 import '../modules/senam/views/senam_view.dart';
 import '../modules/senam_ai/bindings/senam_ai_binding.dart';
@@ -241,6 +243,11 @@ class AppPages {
       name: _Paths.KALKULATOR_BERSALIN,
       page: () => const KalkulatorBersalinView(),
       binding: KalkulatorBersalinBinding(),
+    ),
+    GetPage(
+      name: _Paths.RIWAYAT_KEHAMILAN,
+      page: () => const RiwayatKehamilanView(),
+      binding: RiwayatKehamilanBinding(),
     ),
   ];
 }

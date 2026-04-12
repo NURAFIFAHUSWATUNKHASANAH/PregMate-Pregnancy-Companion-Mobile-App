@@ -31,6 +31,7 @@ class HomeController extends GetxController {
   var ukuranJanin = "".obs;
   var perkembanganJanin = "".obs;
   var tipsKesehatan = "".obs;
+  var statusKehamilan = "".obs;
 
   final pages = <Widget>[
     HomeView(),
@@ -56,10 +57,6 @@ class HomeController extends GetxController {
 
     fetchUserData();
     fetchDashboardKehamilan();
-
-    /// ✅ PAKAI 1 SUMBER HISTORI
-    final historiController = Get.put(HistoriController());
-    historiController.refreshHistory();
   }
 
   void fetchUserData() {
@@ -71,7 +68,6 @@ class HomeController extends GetxController {
   /// DASHBOARD KEHAMILAN
   /// ==============================
   Future<void> fetchDashboardKehamilan() async {
-
     final token = box.read('auth_token');
     final role = box.read('user_role');
 
@@ -87,11 +83,11 @@ class HomeController extends GetxController {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          "Authorization": "Bearer $token"
-        }
+          "Authorization": "Bearer $token",
+        },
       );
 
-      /// 🔐 HANDLE TOKEN EXPIRED
+      /// 🔐 TOKEN EXPIRED
       if (response.statusCode == 401) {
         final body = jsonDecode(response.body);
 
@@ -104,9 +100,42 @@ class HomeController extends GetxController {
         }
       }
 
-      if (response.statusCode == 200) {
+      /// ❌ TIDAK ADA KEHAMILAN AKTIF
+      if (response.statusCode == 404) {
+        print("⚠️ Tidak ada kehamilan aktif");
 
+        statusKehamilan.value = "finished";
+        usiaMinggu.value = 0;
+        usiaHari.value = 0;
+        trimester.value = 0;
+        hpl.value = "";
+        hpht.value = "";
+        tinggiBadan.value = "";
+        beratBadan.value = "";
+        ukuranJanin.value = "";
+        perkembanganJanin.value = "";
+        tipsKesehatan.value = "";
+
+        return;
+      }
+
+      /// ✅ SUKSES
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        /// 🔥 SIMPAN KEHAMILAN ID (WAJIB DULU)
+        if (data["kehamilan_id"] != null) {
+          box.write("kehamilan_id", data["kehamilan_id"]);
+          try {
+            final historiController = Get.find<HistoriController>();
+            historiController.refreshHistory();
+          } catch (e) {
+            print("HistoriController belum ready: $e");
+          }
+          print("✅ kehamilan_id tersimpan: ${data["kehamilan_id"]}");
+        } else {
+          print("⚠️ kehamilan_id NULL dari backend");
+        }
 
         usiaMinggu.value = data["usia_kehamilan_minggu"] ?? 0;
         usiaHari.value = data["usia_kehamilan_hari"] ?? 0;
@@ -114,6 +143,7 @@ class HomeController extends GetxController {
         hpl.value = data["hpl"] ?? "";
 
         hpht.value = data["hpht"] ?? "";
+        box.write("hpht", hpht.value); 
         tinggiBadan.value = data["tinggi_badan"]?.toString() ?? "";
         beratBadan.value = data["berat_badan"]?.toString() ?? "";
         riwayatPenyakit.value = data["riwayat_penyakit"] ?? "";
@@ -121,13 +151,52 @@ class HomeController extends GetxController {
         ukuranJanin.value = data["ukuran_janin"] ?? "";
         perkembanganJanin.value = data["perkembangan_janin"] ?? "";
         tipsKesehatan.value = data["tips_kesehatan"] ?? "";
+        statusKehamilan.value = data["status"] ?? "active";
 
-      } else {
-        print("Dashboard pregnancy gagal: ${response.body}");
+        /// 🔥 FIX PENTING: trigger histori SETELAH kehamilan_id pasti ada
+        try {
+          final historiController = Get.find<HistoriController>();
+
+          await Future.delayed(Duration(milliseconds: 150));
+
+          await historiController.refreshHistory();
+          print("✅ histori berhasil di-refresh");
+        } catch (e) {
+          print("⚠️ HistoriController belum ready: $e");
+        }
+
+        return;
       }
 
+      /// ⚠️ ERROR LAIN
+      print("Dashboard pregnancy gagal: ${response.body}");
     } catch (e) {
       print("Error dashboard: $e");
+    }
+  }
+
+  Future<void> endPregnancy() async {
+    final token = box.read('auth_token');
+    if (token == null) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiConfig.baseUrl}/pregnancy/end"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        statusKehamilan.value = "finished";
+        Get.snackbar("Selesai", "Kehamilan telah diakhiri");
+        fetchDashboardKehamilan();
+      } else {
+        Get.snackbar("Gagal", "Tidak bisa mengakhiri kehamilan");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Terjadi kesalahan");
     }
   }
 }

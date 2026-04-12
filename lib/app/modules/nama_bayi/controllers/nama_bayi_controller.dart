@@ -91,6 +91,7 @@ class NamaBayiController extends GetxController {
 
   Future<void> saveFavorite(String name, String meaning) async {
     final token = box.read('auth_token');
+    final kehamilanId = box.read('kehamilan_id');
 
     try {
       await http.post(
@@ -103,7 +104,8 @@ class NamaBayiController extends GetxController {
           "name": name.trim(),
           "meaning": meaning.trim(),
           "category": category.value,
-          "gender": gender.value
+          "gender": gender.value,
+          "kehamilan_id": kehamilanId,
         }),
       );
 
@@ -120,23 +122,24 @@ class NamaBayiController extends GetxController {
   }
 
   Future<void> getFavorites() async {
-    final token = box.read('auth_token');
+  final token = box.read('auth_token');
+  final kehamilanId = box.read('kehamilan_id'); // 🔥 TAMBAHAN
 
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.babyNameFavoriteUrl),
-        headers: {"Authorization": "Bearer $token"},
-      );
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiConfig.babyNameFavoriteUrl}?kehamilan_id=$kehamilanId"), // 🔥 UBAH DI SINI
+      headers: {"Authorization": "Bearer $token"},
+    );
 
-      final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body);
 
-      if (data["status"] == "success") {
-        favorites.value = List<Map<String, dynamic>>.from(data["data"]);
-      }
-    } catch (e) {
-      Get.snackbar("Error", "Gagal ambil favorit");
+    if (data["status"] == "success") {
+      favorites.value = List<Map<String, dynamic>>.from(data["data"]);
     }
+  } catch (e) {
+    Get.snackbar("Error", "Gagal ambil favorit");
   }
+}
 
   /// ================================
   /// DELETE FAVORITE

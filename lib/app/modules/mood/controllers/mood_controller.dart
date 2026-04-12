@@ -20,23 +20,27 @@ class MoodController extends GetxController {
     isLoading.value = true;
 
     try {
-      // 🔥 GANTI SharedPreferences → GetStorage
       final userId = box.read('user_id');
+      final kehamilanId = box.read('kehamilan_id');
 
-      print("DEBUG USER ID (GetStorage): $userId");
+      // 🔥 VALIDASI PENTING
+      if (userId == null || kehamilanId == null) {
+        recommendation.value = "⚠ Data user / kehamilan tidak ditemukan";
+        isLoading.value = false;
+        return;
+      }
 
       final url = ApiConfig.moodRecommendationUrl;
 
       final bodyData = {
         "user_id": userId,
+        "kehamilan_id": kehamilanId, // ✅ SUDAH BENAR
         "energy": energi.value,
         "nausea": mual.value,
         "pain": nyeri.value,
         "sleep": tidur.value,
         "appetite": nafsuMakan.value
       };
-
-      print("Request Body: ${jsonEncode(bodyData)}");
 
       final response = await http.post(
         Uri.parse(url),
@@ -45,9 +49,6 @@ class MoodController extends GetxController {
         },
         body: jsonEncode(bodyData),
       );
-
-      print("STATUS: ${response.statusCode}");
-      print("RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

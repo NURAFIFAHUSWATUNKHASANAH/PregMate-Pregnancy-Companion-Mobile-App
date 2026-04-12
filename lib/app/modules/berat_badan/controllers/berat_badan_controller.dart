@@ -100,8 +100,7 @@ Future<void> tambahMingguan(double berat, DateTime tanggal) async {
   final token = box.read('auth_token');
   if (token == null) return;
 
-  final homeController = Get.find<HomeController>();
-  final hphtString = homeController.hpht.value;
+final hphtString = box.read("hpht") ?? "";
 
   if (hphtString.isEmpty) {
     Get.snackbar("Error", "HPHT belum tersedia");
@@ -212,8 +211,7 @@ int getMingguKehamilan(DateTime date, DateTime hpht) {
 
 
 bool isMingguSudahAda(DateTime date) {
-  final homeController = Get.find<HomeController>();
-  final hphtString = homeController.hpht.value;
+final hphtString = box.read("hpht") ?? "";
 
   if (hphtString.isEmpty) return false;
 
@@ -247,10 +245,8 @@ DateTime? getBatasAkhirKehamilan() {
 }
 
 double hitungIMT() {
-  final home = Get.find<HomeController>();
-
-  final tb = double.tryParse(home.tinggiBadan.value) ?? 0;
-  final bb = double.tryParse(home.beratBadan.value) ?? 0;
+final tb = double.tryParse(box.read("tinggi_badan") ?? "") ?? 0;
+final bb = double.tryParse(box.read("berat_badan") ?? "") ?? 0;
 
   if (tb == 0 || bb == 0) return 0;
 

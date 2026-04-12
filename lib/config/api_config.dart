@@ -16,7 +16,7 @@ class ApiConfig {
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'http://10.1.126.246:5000';
+    _baseUrl = 'http://10.1.127.253:5000';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------
@@ -30,9 +30,24 @@ class ApiConfig {
   static String updateUserUrl(String userId) => '$_baseUrl/user/$userId';
 
   // ---------------- Histori ----------------
-  static String get historiUrl => '$_baseUrl/histori';
-  static String historiUrlByUser(String userId) => '$_baseUrl/histori/$userId';
+// ---------------- Histori ----------------
+static String get historiUrl => '$_baseUrl/histori';
 
+// ambil histori per kehamilan
+static String historiByUserAndPregnancy(
+  String userId,
+  String kehamilanId,
+) {
+  return '$_baseUrl/histori/$userId/$kehamilanId';
+}
+
+// ambil statistik per kehamilan
+static String historiStats(
+  String userId,
+  String kehamilanId,
+) {
+  return '$_baseUrl/histori/stats/$userId/$kehamilanId';
+}
   // ---------------- Artikel ----------------
   static String get artikelUrl => '$_baseUrl/api/artikel';
   static String artikelDetailUrl(String id) => '$artikelUrl/$id';

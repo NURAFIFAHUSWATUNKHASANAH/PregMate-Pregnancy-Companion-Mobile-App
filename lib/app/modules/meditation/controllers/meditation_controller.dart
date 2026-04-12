@@ -52,6 +52,7 @@ class MeditationController extends GetxController {
     try {
       final box = GetStorage();
       final userId = box.read('user_id');
+      final kehamilanId = box.read('kehamilan_id');
 
       print("DEBUG USER ID (Meditation): $userId");
 
@@ -59,6 +60,7 @@ class MeditationController extends GetxController {
 
       final bodyData = {
         "user_id": userId,
+        "kehamilan_id": kehamilanId,
         "label": label,
         "durasi": durasiMenit,
       };

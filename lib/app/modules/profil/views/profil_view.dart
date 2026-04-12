@@ -28,11 +28,10 @@ class ProfileView extends GetView<ProfileController> {
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        // TAMBAHKAN padding bawah ekstra (misal: 100) supaya tidak tertutup bottom menu
+        padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 100),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-
             // 1. Profile Header Section
             Center(
               child: Stack(
@@ -56,22 +55,21 @@ class ProfileView extends GetView<ProfileController> {
                         imageProvider = FileImage(selectedImage);
                       } else if (fotoUrl.isNotEmpty) {
                         String fullUrl = fotoUrl.startsWith('http')
-                          ? fotoUrl
-                          : '${ApiConfig.baseUrl}/$fotoUrl';
+                            ? fotoUrl
+                            : '${ApiConfig.baseUrl}/$fotoUrl';
                         imageProvider = NetworkImage(fullUrl);
                       } else {
                         imageProvider = const AssetImage('assets/splash1.png');
                       }
 
                       return GestureDetector(
-                          onTap: controller.pickImageFromGallery,
-                          child: CircleAvatar(
-                            radius: avatarRadius,
-                            backgroundColor: const Color(0xFFF1F5F9),
-                            backgroundImage: imageProvider,
-                          ),
-                        );
-
+                        onTap: controller.pickImageFromGallery,
+                        child: CircleAvatar(
+                          radius: avatarRadius,
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          backgroundImage: imageProvider,
+                        ),
+                      );
                     }),
                   ),
                   GestureDetector(
@@ -151,10 +149,17 @@ class ProfileView extends GetView<ProfileController> {
               accentColor: Colors.blue.shade600,
             ),
             _buildModernMenu(
+              icon: Icons.pregnant_woman_rounded,
+              title: "Riwayat Kehamilan",
+              subtitle: "Lihat data kehamilan",
+              onTap: () => Get.toNamed('/riwayat-kehamilan'),
+              accentColor: Colors.pink.shade400,
+            ),
+            _buildModernMenu(
               icon: Icons.logout_rounded,
               title: "Keluar",
               subtitle: "Akhiri sesi login akun ini",
-              onTap: () => _showLogoutDialog(), // Menggunakan Dialog Konfirmasi
+              onTap: () => _showLogoutDialog(),
               accentColor: Colors.red.shade600,
               isLast: true,
             ),
@@ -175,7 +180,6 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  // --- Fungsi Dialog Konfirmasi Bergaya SweetAlert ---
   void _showLogoutDialog() {
     Get.defaultDialog(
       title: "Konfirmasi Keluar",
@@ -194,17 +198,16 @@ class ProfileView extends GetView<ProfileController> {
       ),
       backgroundColor: Colors.white,
       radius: 20,
-      // Tombol Batal
       cancel: OutlinedButton(
         onPressed: () => Get.back(),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFE2E8F0)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
         child: const Text("Batal", style: TextStyle(color: Color(0xFF64748B))),
       ),
-      // Tombol Ya (Logout)
       confirm: ElevatedButton(
         onPressed: () {
           Get.back();
@@ -213,10 +216,12 @@ class ProfileView extends GetView<ProfileController> {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red.shade600,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
-        child: const Text("Ya, Keluar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        child: const Text("Ya, Keluar",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
