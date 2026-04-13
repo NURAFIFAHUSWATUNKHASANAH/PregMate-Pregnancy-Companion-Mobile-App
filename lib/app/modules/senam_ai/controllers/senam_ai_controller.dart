@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:PregMate/app/routes/app_pages.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -199,8 +200,15 @@ class SenamAiController extends GetxController {
 
       if (response.statusCode == 201) {
         /// ✅ 1 SUMBER HISTORI
-        final historiController = Get.find<HistoriController>();
-        await historiController.refreshHistory();
+HistoriController historiController;
+
+if (Get.isRegistered<HistoriController>()) {
+  historiController = Get.find<HistoriController>();
+} else {
+  historiController = Get.put(HistoriController());
+}
+
+await historiController.refreshHistory();
 
         Get.snackbar("Sukses", "Histori latihan tersimpan");
       } else if (response.statusCode == 401) {
@@ -238,10 +246,11 @@ class SenamAiController extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Get.back(); // dialog
-              Get.back(); // halaman
-            },
+onPressed: () {
+  Future.delayed(const Duration(milliseconds: 300), () {
+    Get.until((route) => route.isFirst == false && route.settings.name == Routes.SENAM);
+  });
+},
             child: const Text("Tutup"),
           ),
         ],

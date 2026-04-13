@@ -16,7 +16,7 @@ class ApiConfig {
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'http://10.1.127.253:5000';
+    _baseUrl = 'http://10.1.127.190:5000';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------

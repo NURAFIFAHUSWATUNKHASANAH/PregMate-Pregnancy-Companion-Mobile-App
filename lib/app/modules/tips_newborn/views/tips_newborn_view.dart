@@ -1,4 +1,10 @@
+import 'package:PregMate/app/modules/tips_newborn/views/ganti_popok_view.dart';
+import 'package:PregMate/app/modules/tips_newborn/views/memandikan_bayi_view.dart';
 import 'package:PregMate/app/modules/tips_newborn/views/menyusui.dart';
+import 'package:PregMate/app/modules/tips_newborn/views/perawatan_kulit_bayi.dart';
+import 'package:PregMate/app/modules/tips_newborn/views/perawatan_talipusar_view.dart';
+import 'package:PregMate/app/modules/tips_newborn/views/pijat_bayi_view.dart';
+import 'package:PregMate/app/modules/tips_newborn/views/pompa_asi.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/tips_newborn_controller.dart';
@@ -25,7 +31,8 @@ class TipsNewbornView extends GetView<TipsNewbornController> {
           child: CircleAvatar(
             backgroundColor: kMidnightBlue.withOpacity(0.05),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: kMidnightBlue),
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  size: 18, color: kMidnightBlue),
               onPressed: () => Get.back(),
             ),
           ),
@@ -63,6 +70,19 @@ class TipsNewbornView extends GetView<TipsNewbornController> {
                     Get.to(() => const BedongBayiView());
                   } else if (tip["title"] == "Tutorial Menyusui") {
                     Get.to(() => const MenyusuiView());
+                  } else if (tip["title"] ==
+                      "Tutorial Memompa ASI & Penyimpanan ASI") {
+                    Get.to(() => const PompaAsiView());
+                  } else if (tip["title"] == "Pijat Bayi") {
+                    Get.to(() => const PijatBayiView());
+                  } else if (tip["title"] == "Memandikan Bayi") {
+                    Get.to(() => const MemandikanBayiView());
+                  } else if (tip["title"] == "Ganti Popok") {
+                    Get.to(() => const GantiPopokView());
+                  } else if (tip["title"] == "Perawatan Tali Pusar") {
+                    Get.to(() => const PerawatanTaliPusarView());
+                  } else if (tip["title"] == "Perawatan Kulit Bayi") {
+                    Get.to(() => const PerawatanKulitBayiView());
                   } else {
                     Get.snackbar(
                       "Coming Soon 🚧",

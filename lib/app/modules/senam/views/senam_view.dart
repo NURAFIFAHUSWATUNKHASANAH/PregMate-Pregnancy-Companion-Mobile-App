@@ -1,3 +1,4 @@
+import 'package:PregMate/app/modules/histori/controllers/histori_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:PregMate/app/modules/histori/views/histori_view.dart';
@@ -11,6 +12,8 @@ class SenamView extends GetView<SenamController> {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(HistoriController());
+    
     const Color kMidnightBlue = Color(0xFF0C2D57);
     const Color kRosePink = Color(0xFFFF8E9E);
     const Color kBgColor = Color(0xFFFBFBFF);

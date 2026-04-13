@@ -1,4 +1,9 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+
+final box = GetStorage();
+
+
 
 class ItemChecklist {
   String name;
@@ -81,13 +86,74 @@ class TasBersalinController extends GetxController {
     ItemChecklist(name: "Tripod Mini", detail: "Opsional, biar bisa foto bertiga bareng Ibu & Bayi."),
   ].obs;
 
+@override
+void onInit() {
+  super.onInit();
+  loadData();
+}
+
   // Logika toggle reaktif
-  void toggleItem(ItemChecklist item) {
-    item.isChecked = !item.isChecked;
-    ibuList.refresh();
-    bayiList.refresh();
-    pendampingList.refresh();
+void toggleItem(ItemChecklist item, String category) {
+  item.isChecked = !item.isChecked;
+
+  saveData(category);
+
+  ibuList.refresh();
+  bayiList.refresh();
+  pendampingList.refresh();
+}
+
+void saveData(String category) {
+  List<Map<String, dynamic>> data;
+
+  if (category == "ibu") {
+    data = ibuList.map((e) => {
+      "name": e.name,
+      "isChecked": e.isChecked
+    }).toList();
+  } else if (category == "bayi") {
+    data = bayiList.map((e) => {
+      "name": e.name,
+      "isChecked": e.isChecked
+    }).toList();
+  } else {
+    data = pendampingList.map((e) => {
+      "name": e.name,
+      "isChecked": e.isChecked
+    }).toList();
   }
+
+  box.write(category, data);
+}
+
+void loadData() {
+  loadCategory("ibu", ibuList);
+  loadCategory("bayi", bayiList);
+  loadCategory("pendamping", pendampingList);
+}
+
+void loadCategory(String key, RxList<ItemChecklist> list) {
+  final stored = box.read(key);
+
+  if (stored != null && stored is List) {
+    for (var item in list) {
+      Map<String, dynamic>? found;
+
+      try {
+        found = stored
+            .cast<Map>()
+            .firstWhere((e) => e["name"] == item.name)
+            .cast<String, dynamic>();
+      } catch (e) {
+        found = null;
+      }
+
+      if (found != null) {
+        item.isChecked = found["isChecked"] ?? false;
+      }
+    }
+  }
+}
 
   // Hitung progres (0.0 sampai 1.0)
   double getProgress(List<ItemChecklist> list) {
