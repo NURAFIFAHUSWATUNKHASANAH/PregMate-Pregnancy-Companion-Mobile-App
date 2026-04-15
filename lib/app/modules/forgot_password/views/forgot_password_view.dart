@@ -26,12 +26,10 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
         ),
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
         child: Obx(() => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Ilustrasi atau Ikon Header
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(20),
@@ -48,70 +46,88 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                 ),
                 const SizedBox(height: 32),
 
-                // 2. Teks Instruksi
-                Text(
-                  controller.otpRequested.value
-                      ? "Verifikasi Identitas"
-                      : "Atur Ulang Password",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: navyColor,
+                // 🔥 CENTER TITLE DIGANTI
+                Center(
+                  child: Text(
+                    controller.otpRequested.value
+                        ? "Verifikasi Akun Anda"
+                        : "Atur Ulang Password",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: navyColor,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  controller.otpRequested.value
-                      ? "Silahkan masukkan kode OTP yang kami kirim ke email Anda dan buat password baru."
-                      : "Jangan khawatir! Masukkan email Anda di bawah ini untuk menerima kode verifikasi OTP.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.5,
+
+                const SizedBox(height: 10),
+
+                Center(
+                  child: Text(
+                    controller.otpRequested.value
+                        ? "Masukkan kode OTP yang dikirim ke WhatsApp Anda untuk melanjutkan proses reset password."
+                        : "Masukkan nomor WhatsApp Anda untuk menerima kode OTP.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.5,
+                    ),
                   ),
                 ),
+
                 const SizedBox(height: 32),
 
-                // 3. Input Email
-                _buildLabel("Alamat Email"),
+                // PHONE
+                _label("Nomor WhatsApp"),
                 const SizedBox(height: 8),
-                _buildTextField(
-                  controller: controller.emailController,
-                  hint: "user@email.com",
-                  icon: Icons.email_outlined,
+                _field(
+                  controller: controller.phoneController,
+                  hint: "08xxxxxxxxxx",
+                  icon: Icons.phone,
                   enabled: !controller.otpRequested.value,
                 ),
 
-                // 4. Input Dinamis (OTP & Password Baru)
                 if (controller.otpRequested.value) ...[
                   const SizedBox(height: 20),
-                  _buildLabel("Kode OTP"),
+                  _label("Kode OTP"),
                   const SizedBox(height: 8),
-                  _buildTextField(
+                  _field(
                     controller: controller.otpController,
-                    hint: "Masukkan 6 digit kode",
-                    icon: Icons.security_rounded,
+                    hint: "Masukkan OTP",
+                    icon: Icons.security,
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 20),
-                  _buildLabel("Password Baru"),
+                  _label("Password Baru"),
                   const SizedBox(height: 8),
-                  _buildTextField(
-                    controller: controller.newPasswordController,
-                    hint: "••••••••",
-                    icon: Icons.lock_outline_rounded,
-                    isPassword: true,
-                  ),
+                  Obx(() => _field(
+                        controller: controller.newPasswordController,
+                        hint: "••••••••",
+                        icon: Icons.lock_outline,
+                        isPassword: controller.hidePassword.value,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            controller.hidePassword.value
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            controller.hidePassword.value =
+                                !controller.hidePassword.value;
+                          },
+                        ),
+                      )),
                 ],
 
                 const SizedBox(height: 40),
 
-                // 5. Tombol Aksi
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: controller.isLoading.value
-                      ? const Center(child: CircularProgressIndicator(color: navyColor))
+                      ? const Center(child: CircularProgressIndicator())
                       : ElevatedButton(
                           onPressed: controller.otpRequested.value
                               ? controller.resetPassword
@@ -121,97 +137,55 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            elevation: 4,
-                            shadowColor: navyColor.withOpacity(0.4),
                           ),
                           child: Text(
                             controller.otpRequested.value
                                 ? "Simpan Password Baru"
-                                : "Kirim Kode OTP",
+                                : "Kirim OTP WhatsApp",
                             style: const TextStyle(
-                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
                         ),
                 ),
-                
-                // 6. Footer
-                if (controller.otpRequested.value) ...[
-                   const SizedBox(height: 20),
-                   Center(
-                     child: TextButton(
-                       onPressed: controller.requestOtp, // Resend logic
-                       child: const Text(
-                         "Belum terima kode? Kirim ulang",
-                         style: TextStyle(color: navyColor, fontWeight: FontWeight.bold),
-                       ),
-                     ),
-                   )
-                ]
               ],
             )),
       ),
     );
   }
 
-  // --- Widget Helpers ---
+  Widget _label(String text) => Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF0C2D57),
+        ),
+      );
 
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF0C2D57),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
+  Widget _field({
     required TextEditingController controller,
     required String hint,
     required IconData icon,
-    bool isPassword = false,
     bool enabled = true,
+    bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
+    Widget? suffixIcon,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: enabled ? Colors.white : Colors.grey[100],
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        enabled: enabled,
-        keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 15),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-          prefixIcon: Icon(icon, color: const Color(0xFF0C2D57), size: 20),
-          contentPadding: const EdgeInsets.symmetric(vertical: 18),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.grey.shade100),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF0C2D57), width: 1.5),
-          ),
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: enabled ? Colors.white : Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
       ),
     );

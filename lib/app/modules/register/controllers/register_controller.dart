@@ -5,63 +5,83 @@ import 'package:http/http.dart' as http;
 import 'package:PregMate/config/api_config.dart';
 
 class RegisterController extends GetxController {
+  var isPasswordHidden = true.obs;
 
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   final TextEditingController husbandNameController = TextEditingController();
-  final TextEditingController husbandEmailController = TextEditingController();
+  final TextEditingController husbandPhoneController = TextEditingController();
 
-  bool isValidEmail(String email) {
-    final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
-    return emailRegex.hasMatch(email);
+  // =========================
+  // VALIDASI NOMOR WA (08...)
+  // =========================
+  bool isValidPhone(String phone) {
+    return phone.startsWith("08") && phone.length >= 10;
   }
 
+  // =========================
+  // KONVERSI 08 -> 62
+  // =========================
+  String formatPhone(String phone) {
+    if (phone.startsWith("08")) {
+      return "62" + phone.substring(1);
+    }
+    return phone;
+  }
+
+  // =========================
+  // REGISTER
+  // =========================
   void register() async {
 
     final String nama = nameController.text.trim();
-    final String email = emailController.text.trim();
+    final String phone = phoneController.text.trim();
     final String password = passwordController.text.trim();
 
     final String namaSuami = husbandNameController.text.trim();
-    final String emailSuami = husbandEmailController.text.trim();
+    final String phoneSuami = husbandPhoneController.text.trim();
 
-    if (nama.isEmpty || email.isEmpty || password.isEmpty) {
-
+    // =========================
+    // VALIDASI INPUT
+    // =========================
+    if (nama.isEmpty || phone.isEmpty || password.isEmpty) {
       Get.snackbar("Error", "Semua data ibu harus diisi");
-
       return;
     }
 
-    if (!isValidEmail(email)) {
-
-      Get.snackbar("Error", "Format email tidak valid");
-
+    if (!isValidPhone(phone)) {
+      Get.snackbar("Error", "Nomor WA harus diawali 08 dan valid");
       return;
     }
+
+    if (phoneSuami.isNotEmpty && !isValidPhone(phoneSuami)) {
+      Get.snackbar("Error", "Nomor WA suami tidak valid");
+      return;
+    }
+
+    // =========================
+    // FORMAT NOMOR KE 62
+    // =========================
+    final String phoneFormatted = formatPhone(phone);
+    final String phoneSuamiFormatted =
+        phoneSuami.isNotEmpty ? formatPhone(phoneSuami) : "";
 
     try {
 
       final response = await http.post(
-
         Uri.parse(ApiConfig.registerUrl),
-
         headers: {
           "Content-Type": "application/json"
         },
-
         body: jsonEncode({
-
           "nama": nama,
-          "email": email,
+          "phone": phoneFormatted,
           "password": password,
-
           "nama_suami": namaSuami,
-          "email_suami": emailSuami
-
+          "phone_suami": phoneSuamiFormatted
         }),
-
       );
 
       final data = jsonDecode(response.body);
@@ -72,7 +92,7 @@ class RegisterController extends GetxController {
 
         Get.snackbar(
           "Sukses",
-          "OTP dikirim ke email Anda",
+          "OTP dikirim ke WhatsApp Anda",
           snackPosition: SnackPosition.BOTTOM,
         );
 

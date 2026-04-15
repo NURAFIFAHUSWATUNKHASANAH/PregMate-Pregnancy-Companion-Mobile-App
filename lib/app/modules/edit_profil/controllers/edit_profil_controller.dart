@@ -9,15 +9,14 @@ import 'package:PregMate/app/routes/app_pages.dart';
 import 'package:PregMate/config/api_config.dart';
 
 class EditProfileController extends GetxController {
-
   final box = GetStorage();
 
   final namaC = TextEditingController();
-  final emailC = TextEditingController();
+  final phoneC = TextEditingController(); // 🔥 GANTI email -> phone
   final passwordC = TextEditingController();
 
   final currentNama = ''.obs;
-  final currentEmail = ''.obs;
+  final currentPhone = ''.obs;
   final isLoading = false.obs;
 
   String? userId;
@@ -31,22 +30,22 @@ class EditProfileController extends GetxController {
 
   String? get token => box.read("auth_token");
 
+  // =========================
+  // LOAD DATA USER
+  // =========================
   void fetchUserIdAndData() async {
-
     final googleEmail = box.read('googleEmail');
 
     if (googleEmail != null && googleEmail.isNotEmpty) {
-
+      // (opsional fallback google login)
       isGoogleLogin = true;
 
       currentNama.value = box.read('googleName') ?? '';
-      currentEmail.value = googleEmail;
+      currentPhone.value = box.read('googlePhone') ?? '';
 
       namaC.text = currentNama.value;
-      emailC.text = currentEmail.value;
-
+      phoneC.text = currentPhone.value;
     } else {
-
       userId = box.read('user_id');
 
       if (userId == null) {
@@ -58,11 +57,13 @@ class EditProfileController extends GetxController {
     }
   }
 
+  // =========================
+  // GET USER DATA FROM API
+  // =========================
   Future<void> fetchUserData() async {
     isLoading.value = true;
 
     try {
-
       final tokenValue = token;
 
       if (tokenValue == null || tokenValue.isEmpty) {
@@ -78,20 +79,16 @@ class EditProfileController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-
         final data = json.decode(response.body);
 
         currentNama.value = data['nama'] ?? '';
-        currentEmail.value = data['email'] ?? '';
+        currentPhone.value = data['phone'] ?? '';
 
         namaC.text = currentNama.value;
-        emailC.text = currentEmail.value;
-
+        phoneC.text = currentPhone.value;
       } else {
-
         Get.snackbar("Gagal", "Tidak dapat mengambil data pengguna");
       }
-
     } catch (e) {
       Get.snackbar("Error", e.toString());
     } finally {
@@ -99,10 +96,12 @@ class EditProfileController extends GetxController {
     }
   }
 
+  // =========================
+  // UPDATE PROFILE (WA VERSION)
+  // =========================
   void updateProfile() async {
-
     String newNama = namaC.text.trim();
-    String newEmail = emailC.text.trim();
+    String newPhone = phoneC.text.trim();
     String newPassword = passwordC.text.trim();
 
     Map<String, String> dataToUpdate = {};
@@ -111,8 +110,8 @@ class EditProfileController extends GetxController {
       dataToUpdate['nama'] = newNama;
     }
 
-    if (newEmail.isNotEmpty && newEmail != currentEmail.value) {
-      dataToUpdate['email'] = newEmail;
+    if (newPhone.isNotEmpty && newPhone != currentPhone.value) {
+      dataToUpdate['phone'] = newPhone;
     }
 
     if (!isGoogleLogin && newPassword.isNotEmpty) {
@@ -125,7 +124,6 @@ class EditProfileController extends GetxController {
     }
 
     try {
-
       final tokenValue = token;
 
       if (tokenValue == null || tokenValue.isEmpty) {
@@ -133,7 +131,7 @@ class EditProfileController extends GetxController {
         return;
       }
 
-      final userIdToUse = isGoogleLogin ? box.read('_id') : userId;
+      final userIdToUse = userId;
 
       if (userIdToUse == null) {
         Get.snackbar("Error", "User ID tidak ditemukan");
@@ -150,32 +148,27 @@ class EditProfileController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-
         final profileController = Get.find<ProfileController>();
         await profileController.fetchUserProfile();
 
+        // update local state
         if (dataToUpdate.containsKey('nama')) {
           currentNama.value = newNama;
-          box.write(isGoogleLogin ? 'googleName' : 'user_nama', newNama);
+          box.write('user_nama', newNama);
         }
 
-        if (dataToUpdate.containsKey('email')) {
-          currentEmail.value = newEmail;
-          box.write(isGoogleLogin ? 'googleEmail' : 'user_email', newEmail);
+        if (dataToUpdate.containsKey('phone')) {
+          currentPhone.value = newPhone;
+          box.write('user_phone', newPhone);
         }
 
         passwordC.clear();
 
         Get.snackbar("Sukses", "Profil berhasil diperbarui.");
         Get.offAllNamed(Routes.BOTTOM, arguments: 3);
-
       } else {
-
-        print(response.body);
-
-        Get.snackbar("Gagal", "Gagal update profil (${response.statusCode})");
+        Get.snackbar("Gagal", "Gagal update profil");
       }
-
     } catch (e) {
       Get.snackbar("Error", e.toString());
     }

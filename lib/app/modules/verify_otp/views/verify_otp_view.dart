@@ -70,39 +70,34 @@ class VerifyOtpView extends GetView<VerifyOtpController> {
                           ],
                         ),
                         child: TextField(
-                          controller: controller.otpController,
-                          keyboardType: TextInputType.number,
-                          maxLength: 6,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18),
-                          decoration: InputDecoration(
-                            counterText: "",
-                            hintText: "••••••",
-                            hintStyle: TextStyle(
-                                color: Colors.grey[400], fontSize: 16),
-                            prefixIcon: const Icon(
-                              Icons.verified_user_outlined,
-                              color: Color(0xFF0C2D57),
-                              size: 20,
-                            ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 18),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade100),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                  color: Color(0xFF0C2D57), width: 1.5),
-                            ),
-                          ),
-                        ),
+  controller: controller.otpController,
+  keyboardType: TextInputType.number,
+  maxLength: 6,
+  textAlign: TextAlign.center, // Tetap gunakan ini
+  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 8), // Tambah letterSpacing agar lebih cantik
+  decoration: InputDecoration(
+    counterText: "",
+    hintText: "••••••",
+    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 16, letterSpacing: 8),
+    
+    // Icon kiri
+    prefixIcon: const Icon(
+      Icons.verified_user_outlined,
+      color: Color(0xFF0C2D57),
+      size: 20,
+    ),
+    
+    // TAMBAHKAN INI: Icon transparan di kanan supaya teks terdorong ke tengah dengan adil
+    suffixIcon: const Icon(
+      Icons.verified_user_outlined,
+      color: Colors.transparent, 
+      size: 20,
+    ),
+
+    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+    // ... sisa border sama
+  ),
+),
                       ),
 
                       const SizedBox(height: 30),

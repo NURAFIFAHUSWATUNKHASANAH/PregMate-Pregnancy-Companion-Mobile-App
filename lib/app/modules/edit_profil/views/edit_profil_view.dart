@@ -57,13 +57,13 @@ class EditProfileView extends GetView<EditProfileController> {
                   icon: Icons.person_outline_rounded,
                 ),
                 const SizedBox(height: 20),
-                _buildModernTextField(
-                  label: "Email",
-                  hint: "example@mail.com",
-                  controller: controller.emailC,
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                ),
+_buildModernTextField(
+  label: "Nomor WhatsApp",
+  hint: "08xxxxxxxxxx",
+  controller: controller.phoneC, // ✅ sudah diganti ke phoneC
+  icon: Icons.phone_android_rounded,
+  keyboardType: TextInputType.phone,
+),
                 const SizedBox(height: 20),
                 _buildModernTextField(
                   label: "Kata Sandi",

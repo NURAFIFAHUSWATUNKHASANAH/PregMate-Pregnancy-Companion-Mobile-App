@@ -53,12 +53,12 @@ class LoginView extends GetView<LoginController> {
                       const SizedBox(height: 40),
 
                       // 2. Input Email
-                      _buildLabel("Email"),
+                      _buildLabel("Nomor WhatsApp"),
                       const SizedBox(height: 8),
                       _buildTextField(
-                        onChanged: (value) => controller.email.value = value,
-                        hint: "Masukkan email anda",
-                        icon: Icons.email_outlined,
+                        onChanged: (value) => controller.phone.value = value,
+hint: "Contoh: 08xxxxxxxxxx",
+icon: Icons.phone,
                       ),
                       const SizedBox(height: 20),
 

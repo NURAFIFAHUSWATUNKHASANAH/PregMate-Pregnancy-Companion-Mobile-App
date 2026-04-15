@@ -31,7 +31,7 @@ class RegisterView extends GetView<RegisterController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 40), // Spasi atas tambahan
+                      const SizedBox(height: 40),
 
                       /// ================= HEADER =================
                       const Text(
@@ -69,24 +69,29 @@ class RegisterView extends GetView<RegisterController> {
 
                       const SizedBox(height: 20),
 
-                      _buildLabel("Email Ibu"),
+                      _buildLabel("Nomor WhatsApp Ibu"),
                       const SizedBox(height: 8),
                       _buildTextField(
-                        controller: controller.emailController,
-                        hint: "Contoh: ibu@email.com",
-                        icon: Icons.email_outlined,
+                        controller: controller.phoneController,
+                        hint: "Contoh: 08xxxxxxxxxx",
+                        icon: Icons.phone,
                       ),
 
                       const SizedBox(height: 20),
 
                       _buildLabel("Kata Sandi"),
                       const SizedBox(height: 8),
-                      _buildTextField(
-                        controller: controller.passwordController,
-                        hint: "••••••••",
-                        icon: Icons.lock_outline_rounded,
-                        isPassword: true,
-                      ),
+                      // Menggunakan Obx khusus untuk password agar icon mata berfungsi
+                      Obx(() => _buildTextField(
+                            controller: controller.passwordController,
+                            hint: "••••••••",
+                            icon: Icons.lock_outline_rounded,
+                            isPassword: true,
+                            obscureText: controller.isPasswordHidden.value,
+                            onSuffixIconPressed: () {
+                              controller.isPasswordHidden.toggle();
+                            },
+                          )),
 
                       const SizedBox(height: 30),
 
@@ -112,12 +117,12 @@ class RegisterView extends GetView<RegisterController> {
 
                       const SizedBox(height: 20),
 
-                      _buildLabel("Email Suami"),
+                      _buildLabel("Nomor WhatsApp Suami"),
                       const SizedBox(height: 8),
                       _buildTextField(
-                        controller: controller.husbandEmailController,
-                        hint: "Masukkan email suami",
-                        icon: Icons.email,
+                        controller: controller.husbandPhoneController,
+                        hint: "Contoh: 08xxxxxxxxxx",
+                        icon: Icons.phone,
                       ),
 
                       const SizedBox(height: 40),
@@ -182,6 +187,8 @@ class RegisterView extends GetView<RegisterController> {
     required String hint,
     required IconData icon,
     bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onSuffixIconPressed,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -197,17 +204,25 @@ class RegisterView extends GetView<RegisterController> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
-        // Properti krusial agar teks berada di tengah secara vertikal
+        obscureText: isPassword ? obscureText : false,
         textAlignVertical: TextAlignVertical.center,
         style: const TextStyle(fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
           prefixIcon: Icon(icon, color: const Color(0xFF0C2D57), size: 20),
-          // Padding vertical disesuaikan agar tidak mendorong teks terlalu ke atas
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          // Tambahkan Suffix Icon untuk Password
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: Colors.grey,
+                    size: 20,
+                  ),
+                  onPressed: onSuffixIconPressed,
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,

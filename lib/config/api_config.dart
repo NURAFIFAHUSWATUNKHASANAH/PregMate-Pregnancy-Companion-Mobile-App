@@ -11,12 +11,12 @@ class ApiConfig {
       _baseUrl = _baseUrl.substring(0, _baseUrl.length - 1);
     }
     print('Base URL updated to: $_baseUrl');
-    
+
   }
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'http://10.1.127.190:5000';
+    _baseUrl = 'https://web-production-60f9.up.railway.app';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------
@@ -87,4 +87,6 @@ static String get kalkulatorDashboardUrl => '$_baseUrl/kalkulator/dashboard';
 static String get kalkulatorTabungUrl => '$_baseUrl/kalkulator/tabung';
 static String get kalkulatorPengeluaranUrl => '$_baseUrl/kalkulator/pengeluaran';
 
+static String get tasBersalinUrl => '$_baseUrl/tasbersalin';
+static String get tasBersalinToggleUrl => '$_baseUrl/tasbersalin/toggle';
 }

@@ -12,17 +12,17 @@ import 'package:PregMate/config/api_config.dart';
 import 'package:PregMate/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
-  var email = ''.obs;
+  var phone = ''.obs; // 🔥 GANTI dari email → phone
   var password = ''.obs;
   var isPasswordHidden = true.obs;
 
   final AuthService _authService;
-  final box = GetStorage(); // ✅ FIX
+  final box = GetStorage();
 
   LoginController({required AuthService authService})
       : _authService = authService;
 
-  void updateEmail(String value) => email.value = value;
+  void updatePhone(String value) => phone.value = value;
   void updatePassword(String value) => password.value = value;
 
   void togglePasswordVisibility() {
@@ -30,20 +30,32 @@ class LoginController extends GetxController {
   }
 
   /// =========================
+  /// FORMAT NOMOR (08 → 62)
+  /// =========================
+  String formatPhone(String phone) {
+    if (phone.startsWith("08")) {
+      return "62" + phone.substring(1);
+    }
+    return phone;
+  }
+
+  /// =========================
   /// LOGIN MANUAL
   /// =========================
   Future<void> login() async {
-    if (email.value.isEmpty || password.value.isEmpty) {
-      Get.snackbar("Error", "Email dan Password harus diisi!");
+    if (phone.value.isEmpty || password.value.isEmpty) {
+      Get.snackbar("Error", "Nomor WA dan Password harus diisi!");
       return;
     }
+
+    final String phoneFormatted = formatPhone(phone.value);
 
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.loginUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': email.value,
+          'phone': phoneFormatted, // 🔥 KIRIM KE BACKEND
           'password': password.value,
         }),
       );
@@ -54,14 +66,11 @@ class LoginController extends GetxController {
         final userData = data['user'];
         final role = userData['role'];
 
-        print("Token JWT: $token");
-        print("ROLE USER: $role");
-
-        /// ✅ SIMPAN KE GETSTORAGE (FIX)
+        /// SIMPAN DATA
         box.write('auth_token', token);
         box.write('user_id', userData['_id']);
         box.write('user_nama', userData['nama']);
-        box.write('user_email', userData['email']);
+        box.write('user_phone', userData['phone']); // 🔥 GANTI email → phone
         box.write('user_role', role);
         box.write('login_method', 'manual');
 
@@ -73,10 +82,6 @@ class LoginController extends GetxController {
           box.write('user_foto', userData['foto']);
         }
 
-        /// 🔥 DEBUG (opsional tapi penting)
-        print("TOKEN TERSIMPAN: ${box.read('auth_token')}");
-        print("USER ID TERSIMPAN: ${box.read('user_id')}");
-
         await sendFcmToken(token);
 
         /// INIT PROFILE
@@ -84,13 +89,13 @@ class LoginController extends GetxController {
 
         profileController.userId.value = userData['_id'];
         profileController.namaC.value = userData['nama'];
-        profileController.emailC.value = userData['email'];
+        profileController.emailC.value = userData['phone']; // 🔥 isi pakai phone
         profileController.foto.value = userData['foto'] ?? '';
         profileController.loginMethod.value = 'manual';
 
         Get.snackbar("Berhasil", "Selamat datang, ${userData['nama']}!");
 
-        /// 🔥 TRIGGER HISTORI (BIAR LANGSUNG KELOAD)
+        /// LOAD HISTORI
         if (Get.isRegistered<HistoriController>()) {
           Get.find<HistoriController>().loadUserData();
         } else {
@@ -107,9 +112,8 @@ class LoginController extends GetxController {
         }
       } else {
         final res = jsonDecode(response.body);
-
         Get.snackbar(
-            "Gagal Login", res['message'] ?? "Email atau password salah");
+            "Gagal Login", res['message'] ?? "Nomor atau password salah");
       }
     } catch (e) {
       Get.snackbar("Error", "Terjadi kesalahan: $e");
