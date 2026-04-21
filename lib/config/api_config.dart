@@ -16,7 +16,7 @@ class ApiConfig {
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'https://web-production-60f9.up.railway.app';
+    _baseUrl = 'http://10.1.124.112:5000';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------
@@ -89,4 +89,7 @@ static String get kalkulatorPengeluaranUrl => '$_baseUrl/kalkulator/pengeluaran'
 
 static String get tasBersalinUrl => '$_baseUrl/tasbersalin';
 static String get tasBersalinToggleUrl => '$_baseUrl/tasbersalin/toggle';
+
+static String get tipsNewbornUrl => '$_baseUrl/tips-newborn';
+static String tipsNewbornDetailUrl(String id) => '$_baseUrl/tips-newborn/$id';
 }

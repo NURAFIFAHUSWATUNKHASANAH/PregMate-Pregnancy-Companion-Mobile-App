@@ -228,12 +228,11 @@ class AppPages {
       page: () => CravingView(),
       binding: CravingBinding(),
     ),
-    GetPage(
-      name: '/tips-newborn',
-      page: () => const TipsNewbornView(),
-      binding:
-          TipsNewbornBinding(), // 🔹 Ini yang memastikan controller di-initialize
-    ),
+GetPage(
+  name: '/tips-newborn',
+  page: () => const TipsNewbornView(),
+  binding: TipsNewbornBinding(),
+),
     GetPage(
       name: _Paths.TAS_BERSALIN,
       page: () => const TasBersalinView(),

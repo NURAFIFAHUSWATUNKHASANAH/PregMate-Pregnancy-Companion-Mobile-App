@@ -11,7 +11,6 @@ class RegisterView extends GetView<RegisterController> {
       backgroundColor: const Color(0xFFFBFDFF),
       body: Stack(
         children: [
-          // Background decoration (Lingkaran di pojok kiri atas)
           Positioned(
             top: -50,
             left: -50,
@@ -95,7 +94,7 @@ class RegisterView extends GetView<RegisterController> {
 
                       const SizedBox(height: 30),
 
-                      /// ================= DATA SUAMI =================
+                     
                       const Text(
                         "Data Pendamping (Opsional)",
                         style: TextStyle(

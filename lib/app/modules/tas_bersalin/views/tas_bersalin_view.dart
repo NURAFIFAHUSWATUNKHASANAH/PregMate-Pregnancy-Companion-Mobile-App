@@ -5,13 +5,14 @@ import '../controllers/tas_bersalin_controller.dart';
 class TasBersalinView extends GetView<TasBersalinController> {
   const TasBersalinView({Key? key}) : super(key: key);
 
+  // Definisi Warna Konsisten
+  static const Color kMidnightBlue = Color(0xFF0C2D57);
+  static const Color kRosePink = Color(0xFFFF8E9E);
+  static const Color kBgSoft = Color(0xFFF4F7FA);
+  static const Color kAccentBlue = Color(0xFF4485FD);
+
   @override
   Widget build(BuildContext context) {
-    // Definisi Warna Sesuai Request
-    const Color kMidnightBlue = Color(0xFF0C2D57);
-    const Color kRosePink = Color(0xFFFF8E9E);
-    const Color kBgSoft = Color(0xFFF8F9FD);
-
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -20,9 +21,9 @@ class TasBersalinView extends GetView<TasBersalinController> {
           elevation: 0,
           backgroundColor: kBgSoft,
           surfaceTintColor: Colors.transparent,
-          toolbarHeight: 110,
+          toolbarHeight: 100,
           title: Padding(
-            padding: const EdgeInsets.only(top: 20),
+            padding: const EdgeInsets.only(top: 20, left: 4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -31,17 +32,24 @@ class TasBersalinView extends GetView<TasBersalinController> {
                   style: TextStyle(
                     color: kMidnightBlue,
                     fontWeight: FontWeight.w900,
-                    fontSize: 32,
-                    letterSpacing: -1,
+                    fontSize: 28,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                Text(
-                  "Persiapan menyambut kehadiran buah hati",
-                  style: TextStyle(
-                    color: kMidnightBlue.withOpacity(0.5),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, size: 14, color: kRosePink.withOpacity(0.8)),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Persiapan lengkap untuk momen spesial",
+                      style: TextStyle(
+                        color: kMidnightBlue.withOpacity(0.5),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -49,31 +57,36 @@ class TasBersalinView extends GetView<TasBersalinController> {
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(70),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: kMidnightBlue.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
               child: TabBar(
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
                 labelColor: Colors.white,
                 unselectedLabelColor: kMidnightBlue.withOpacity(0.4),
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: kMidnightBlue,
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: const LinearGradient(
+                    colors: [kMidnightBlue, Color(0xFF214C85)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
                 tabs: const [
-                  Tab(child: Text("Ibu", style: TextStyle(fontWeight: FontWeight.bold))),
-                  Tab(child: Text("Bayi", style: TextStyle(fontWeight: FontWeight.bold))),
-                  Tab(child: Text("Ayah", style: TextStyle(fontWeight: FontWeight.bold))),
+                  Tab(text: "Ibu"),
+                  Tab(text: "Bayi"),
+                  Tab(text: "Ayah"),
                 ],
               ),
             ),
@@ -81,220 +94,179 @@ class TasBersalinView extends GetView<TasBersalinController> {
         ),
         body: TabBarView(
           children: [
-            _buildChecklistPage(controller.ibuList, "ibu", kMidnightBlue, kRosePink, Icons.auto_awesome),
-            _buildChecklistPage(controller.bayiList, "bayi", kMidnightBlue, kRosePink, Icons.child_friendly),
-            _buildChecklistPage(controller.pendampingList, "pendamping", kMidnightBlue, kRosePink, Icons.family_restroom),
+            _buildChecklist(controller.ibuList, "ibu"),
+            _buildChecklist(controller.bayiList, "bayi"),
+            _buildChecklist(controller.pendampingList, "pendamping"),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChecklistPage(
-    List<ItemChecklist> list,
-    String category,
-    Color primary,
-    Color accent,
-    IconData icon,
-  ) {
+  Widget _buildChecklist(List<ItemChecklist> list, String category) {
     return Obx(() {
-      double progress = controller.getProgress(list);
-      int totalItems = list.length;
-      int completedItems = list.where((e) => e.isChecked).length;
+      final wajib = list.where((e) => e.type == "wajib").toList();
+      final done = wajib.where((e) => e.isChecked).length;
+      final progress = wajib.isEmpty ? 0.0 : done / wajib.length;
 
       return CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // --- HEADER PROGRESS CARD ---
+          // PROGRES HEADER
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
+                  colors: [kMidnightBlue, Color(0xFF1B4273)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [primary, Color(0xFF1B4275)],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primary.withOpacity(0.3),
+                    color: kMidnightBlue.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              child: Column(
+              child: Stack(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Positioned(
+                    right: -20,
+                    top: -20,
+                    child: Icon(Icons.pregnant_woman, size: 100, color: Colors.white.withOpacity(0.05)),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Icon(icon, color: accent, size: 28),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Kesiapan Barang",
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                          Text(
+                            "${(progress * 100).toStringAsFixed(0)}%",
+                            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 15),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          color: kRosePink,
+                          minHeight: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
                       Text(
-                        "${(progress * 100).toStringAsFixed(0)}%",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 35,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      completedItems == totalItems ? "Semua Perlengkapan Siap! ✨" : "Lengkapi Persiapan",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Stack(
-                    children: [
-                      Container(
-                        height: 10,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 800),
-                        curve: Curves.easeOutCubic,
-                        height: 10,
-                        width: (MediaQuery.of(Get.context!).size.width - 88) * progress,
-                        decoration: BoxDecoration(
-                          color: accent,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: accent.withOpacity(0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "$completedItems / $totalItems Item Terpenuhi",
-                        style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
-                      ),
-                      Icon(Icons.verified, color: accent.withOpacity(0.8), size: 16),
+                        "$done dari ${wajib.length} item Wajib telah masuk tas",
+                        style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+                      )
                     ],
                   ),
                 ],
               ),
             ),
           ),
-
-          // --- CHECKLIST ITEMS ---
+          
+          // LIST ITEMS
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = list[index];
+                (context, i) {
+                  final item = list[i];
                   final isDone = item.isChecked;
+                  final isWajib = item.type == "wajib";
 
                   return AnimatedOpacity(
                     duration: const Duration(milliseconds: 300),
-                    opacity: isDone ? 0.5 : 1.0,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
+                    opacity: isDone ? 0.6 : 1.0,
+                    child: Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: isDone ? accent.withOpacity(0.2) : Colors.transparent,
-                          width: 2,
-                        ),
+                        color: isDone ? Colors.white.withOpacity(0.5) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.03),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: ListTile(
-                        onTap: () => controller.toggleItem(item, category),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        leading: GestureDetector(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: isDone ? accent : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isDone ? accent : Colors.grey.withOpacity(0.3),
-                                width: 2,
-                              ),
-                            ),
-                            child: isDone 
-                                ? const Icon(Icons.check, color: Colors.white, size: 18) 
-                                : null,
-                          ),
-                        ),
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: isDone ? primary.withOpacity(0.5) : primary,
-                                  decoration: TextDecoration.none, // Garis coret dihapus
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => controller.toggleItem(item, category),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // Checkbox Modern
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: isDone ? Colors.green : Colors.transparent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isDone ? Colors.green : Colors.grey.shade300,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: isDone
+                                      ? const Icon(Icons.check, size: 18, color: Colors.white)
+                                      : null,
                                 ),
-                              ),
-                            ),
-                            if (isDone)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: accent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  "Siap",
-                                  style: TextStyle(
-                                    color: accent,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: kMidnightBlue,
+                                          decoration: isDone ? TextDecoration.lineThrough : null,
+                                        ),
+                                      ),
+                                      if (item.detail.isNotEmpty)
+                                        Text(
+                                          item.detail,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade500,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            item.detail,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDone ? Colors.grey[400] : Colors.black54,
+                                if (isWajib && !isDone)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: kRosePink.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      "WAJIB",
+                                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: kRosePink),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -306,6 +278,7 @@ class TasBersalinView extends GetView<TasBersalinController> {
               ),
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       );
     });

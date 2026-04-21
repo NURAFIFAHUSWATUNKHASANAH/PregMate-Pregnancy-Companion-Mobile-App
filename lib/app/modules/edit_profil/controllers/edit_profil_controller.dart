@@ -96,6 +96,12 @@ class EditProfileController extends GetxController {
     }
   }
 
+final isPasswordHidden = true.obs;
+
+void togglePasswordVisibility() {
+  isPasswordHidden.value = !isPasswordHidden.value;
+}
+
   // =========================
   // UPDATE PROFILE (WA VERSION)
   // =========================
