@@ -23,7 +23,7 @@ class RiwayatKehamilanController extends GetxController {
 
     try {
       final response = await http.get(
-        Uri.parse("${ApiConfig.baseUrl}/pregnancy/history"),
+        Uri.parse("${ApiConfig.baseUrl}/pregnancy/history/detail"),
         headers: {
           "Authorization": "Bearer $token",
         },

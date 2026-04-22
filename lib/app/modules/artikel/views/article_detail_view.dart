@@ -135,10 +135,12 @@ class ArtikelDetailView extends StatelessWidget {
                               child: Icon(Icons.person, size: 16, color: Color(0xFF64748B)),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              "Tim PhysioCare • 2 menit baca",
-                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                            ),
+Text(
+  artikel.createdAt.isNotEmpty
+      ? "Tim PregMate • ${timeAgo(artikel.createdAt)}"
+      : "Tim PregMate",
+  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+),
                           ],
                         ),
                         const SizedBox(height: 24),
@@ -167,4 +169,20 @@ class ArtikelDetailView extends StatelessWidget {
       },
     );
   }
+  String timeAgo(String date) {
+  try {
+    final dateTime = DateTime.parse(date);
+    final diff = DateTime.now().difference(dateTime);
+
+    if (diff.inMinutes < 60) {
+      return "${diff.inMinutes} menit lalu";
+    } else if (diff.inHours < 24) {
+      return "${diff.inHours} jam lalu";
+    } else {
+      return "${diff.inDays} hari lalu";
+    }
+  } catch (e) {
+    return "baru saja"; // fallback aman
+  }
+}
 }

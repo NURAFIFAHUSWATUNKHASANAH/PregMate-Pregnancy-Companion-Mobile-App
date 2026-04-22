@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:PregMate/app/modules/home/controllers/home_controller.dart';
 import 'package:PregMate/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +25,10 @@ class KalkulatorBersalinController extends GetxController {
   var listTransaksi = <dynamic>[].obs;
   var nabungPerBulan = 0.0.obs;
 
+  var nabungPerMinggu = 0.0.obs; // 🔥 BARU
+var targetNabung = 0.0.obs;    // 🔥 BARU
+var metodeNabung = "bulanan".obs; // 🔥 BARU
+
   // --- Input Controllers ---
   final biayaController = TextEditingController();
   var totalBiaya = 0.0.obs;
@@ -37,7 +42,8 @@ class KalkulatorBersalinController extends GetxController {
   // Akses ke HomeController (Asumsi kamu punya data HPHT di sana)
   // final homeC = Get.find<HomeController>();
   // Jika tidak ada, buat dummy untuk keperluan UI View
-  var homeC = _DummyHomeC();
+// 🔥 Pakai controller asli
+final homeC = Get.find<HomeController>();
 
   @override
   void onInit() {
@@ -122,7 +128,38 @@ class KalkulatorBersalinController extends GetxController {
                 ),
 
                 const SizedBox(height: 25),
+                const SizedBox(height: 20),
 
+const Text(
+  "Metode Menabung",
+  style: TextStyle(
+    fontWeight: FontWeight.w900,
+    color: Color(0xFF0C2D57),
+  ),
+),
+
+const SizedBox(height: 10),
+
+Obx(() => Row(
+  children: [
+    Expanded(
+      child: ChoiceChip(
+        label: const Text("Bulanan"),
+        selected: metodeNabung.value == "bulanan",
+        onSelected: (_) => metodeNabung.value = "bulanan",
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: ChoiceChip(
+        label: const Text("Mingguan"),
+        selected: metodeNabung.value == "mingguan",
+        onSelected: (_) => metodeNabung.value = "mingguan",
+      ),
+    ),
+  ],
+)),
+const SizedBox(height: 10),
                 // 🔥 Section Title
                 const Text(
                   "DATA REFERENSI",
@@ -233,133 +270,266 @@ class KalkulatorBersalinController extends GetxController {
   // --- API Methods ---
 
   Future<void> getDashboard() async {
-    try {
-      if (token == null) return;
-      isLoading.value = true;
+  try {
+    if (token == null) return;
 
-      final res = await http.get(
-        Uri.parse(ApiConfig.kalkulatorDashboardUrl),
-        headers: {"Authorization": "Bearer $token"},
-      );
+    isLoading.value = true;
 
-      final data = jsonDecode(res.body);
-      if (data["status"] == "success") {
-        final d = data["data"];
+    // 🔥 Ambil kehamilan_id dari storage
+    final kehamilanId = box.read("kehamilan_id") ?? "";
 
-        saldo.value = (d["saldo"] ?? 0).toDouble();
-        totalMasuk.value = (d["total_masuk"] ?? 0).toDouble();
-        totalKeluar.value = (d["total_keluar"] ?? 0).toDouble();
-        totalKebutuhan.value = (d["total_kebutuhan"] ?? 0).toDouble();
-        isTargetConfigured.value = totalKebutuhan.value > 0;
-        sisa.value = (d["sisa"] ?? 0).toDouble();
-        nabungPerBulan.value = (d["nabung_per_bulan"] ?? 0).toDouble();
-        progress.value = (d["progress"] ?? 0).toDouble();
-        insight.value = d["insight"] ?? "Lengkapi data untuk melihat insight";
-        sisaBulan.value = d["sisa_bulan"] ?? 0;
-        sisaHari.value = d["sisa_hari"] ?? 0;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!isTargetConfigured.value) {
-            _showTargetDialogOnce();
-          }
-        });
+    print("DEBUG GET DASHBOARD - KEHAMILAN_ID: $kehamilanId");
 
-        // Ambil riwayat dari API
-        if (d["riwayat"] != null) {
-          listTransaksi.assignAll(d["riwayat"]);
-        }
+    // 🔥 Kirim ke backend (kalau ada)
+    final url = kehamilanId.isNotEmpty
+        ? "${ApiConfig.kalkulatorDashboardUrl}?kehamilan_id=$kehamilanId"
+        : ApiConfig.kalkulatorDashboardUrl;
 
-        if (totalKebutuhan.value > 0) {
-          totalBiaya.value = totalKebutuhan.value;
-          biayaController.text = totalKebutuhan.value.toInt().toString();
-        }
+    final res = await http.get(
+      Uri.parse(url),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    final data = jsonDecode(res.body);
+
+    if (data["status"] == "success") {
+      final d = data["data"] ?? {};
+
+      // ===============================
+      // 🔥 SIMPAN kehamilan_id dari backend
+      // ===============================
+      if (d["kehamilan_id"] != null) {
+        box.write("kehamilan_id", d["kehamilan_id"]);
+        print("✅ KEHAMILAN_ID DISIMPAN: ${d["kehamilan_id"]}");
       }
-    } catch (e) {
-      debugPrint("ERROR DASHBOARD: $e");
-    } finally {
-      isLoading.value = false;
+
+      // ===============================
+      // 🔥 SAFE PARSING (ANTI NULL ERROR)
+      // ===============================
+      saldo.value = (d["saldo"] ?? 0).toDouble();
+      totalMasuk.value = (d["total_masuk"] ?? 0).toDouble();
+      totalKeluar.value = (d["total_keluar"] ?? 0).toDouble();
+      totalKebutuhan.value = (d["total_kebutuhan"] ?? 0).toDouble();
+
+      isTargetConfigured.value = totalKebutuhan.value > 0;
+
+      sisa.value = (d["sisa"] ?? 0).toDouble();
+      nabungPerBulan.value = (d["nabung_per_bulan"] ?? 0).toDouble();
+      nabungPerMinggu.value = (d["nabung_per_minggu"] ?? 0).toDouble();
+      targetNabung.value = (d["target_nabung"] ?? 0).toDouble();
+
+      metodeNabung.value = d["metode_nabung"] ?? "bulanan";
+
+      progress.value = (d["progress"] ?? 0).toDouble();
+      insight.value = d["insight"] ?? "Lengkapi data untuk melihat insight";
+
+      sisaBulan.value = d["sisa_bulan"] ?? 0;
+      sisaHari.value = d["sisa_hari"] ?? 0;
+
+      // ===============================
+      // 🔥 RIWAYAT
+      // ===============================
+      if (d["riwayat"] != null) {
+        listTransaksi.assignAll(d["riwayat"]);
+      } else {
+        listTransaksi.clear();
+      }
+
+      // ===============================
+      // 🔥 SYNC INPUT TARGET
+      // ===============================
+      if (totalKebutuhan.value > 0) {
+        totalBiaya.value = totalKebutuhan.value;
+        biayaController.text = totalKebutuhan.value.toInt().toString();
+      }
+
+      // ===============================
+      // 🔥 AUTO SHOW DIALOG (ONLY ONCE)
+      // ===============================
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isTargetConfigured.value) {
+          _showTargetDialogOnce();
+        }
+      });
+    } else {
+      print("❌ STATUS ERROR: ${data["message"]}");
     }
+  } catch (e) {
+    debugPrint("❌ ERROR DASHBOARD: $e");
+  } finally {
+    isLoading.value = false;
   }
+}
 
   Future<void> saveKalkulator() async {
-    if (totalBiaya.value <= 0) {
-      Get.snackbar("Perhatian", "Masukkan estimasi biaya yang valid");
+  if (totalBiaya.value <= 0) {
+    Get.snackbar("Perhatian", "Masukkan estimasi biaya yang valid");
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+
+    // 🔥 1. PAKSA AMBIL DATA KEHAMILAN TERBARU
+    await homeC.fetchDashboardKehamilan();
+
+    // 🔥 2. AMBIL KEHAMILAN ID DARI STORAGE (HASIL DASHBOARD)
+    final kehamilanId = box.read("kehamilan_id");
+
+    if (kehamilanId == null || kehamilanId.toString().isEmpty) {
+      Get.snackbar("Error", "ID kehamilan tidak ditemukan");
       return;
     }
 
-    try {
-      isLoading.value = true;
-      if (homeC.hpht.value.isEmpty) {
-        Get.snackbar("Data Kurang",
-            "Silakan isi data HPHT di halaman Home terlebih dahulu.");
-        return;
-      }
+    print("DEBUG SAVE - KEHAMILAN_ID: $kehamilanId");
 
-      final res = await http.post(
-        Uri.parse(ApiConfig.kalkulatorSaveUrl),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
-        },
-        body: jsonEncode({
-          "hpht": homeC.hpht.value,
-          "hpl": homeC.hpl.value,
-          "total_biaya": totalBiaya.value,
-          "metode": "Manual",
-          "pakai_bpjs": false
-        }),
-      );
+    // 🔥 3. FORMAT TANGGAL
+    final hpht = formatToBackend(homeC.hpht.value);
+    final hpl  = formatToBackend(homeC.hpl.value);
 
-      if (res.statusCode == 200) {
-        await getDashboard();
-        Get.back();
-        Get.snackbar("Berhasil", "Rencana tabungan diperbarui",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF0C2D57),
-            colorText: Colors.white);
-      }
-    } catch (e) {
-      debugPrint("ERROR SAVE: $e");
-    } finally {
-      isLoading.value = false;
+    if (hpht.isEmpty || hpl.isEmpty) {
+      Get.snackbar("Error", "Format tanggal HPHT/HPL tidak valid");
+      return;
     }
-  }
 
+    // 🔥 4. REQUEST API
+    final res = await http.post(
+      Uri.parse(ApiConfig.kalkulatorSaveUrl),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode({
+        "kehamilan_id": kehamilanId, // ✅ FIX UTAMA
+        "hpht": hpht,
+        "hpl": hpl,
+        "total_biaya": totalBiaya.value,
+        "metode": "Manual",
+        "pakai_bpjs": false,
+        "metode_nabung": metodeNabung.value
+      }),
+    );
+
+    print("DEBUG RESPONSE: ${res.body}");
+
+    // 🔐 TOKEN EXPIRED
+    if (res.statusCode == 401) {
+      box.erase();
+      Get.offAllNamed('/login');
+      return;
+    }
+
+    // ❌ ERROR VALIDASI BACKEND
+    if (res.statusCode == 400) {
+      final data = jsonDecode(res.body);
+      Get.snackbar("Gagal", data["message"] ?? "Gagal menyimpan data");
+      return;
+    }
+
+    // ✅ SUCCESS
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final responseData = jsonDecode(res.body);
+
+      // 🔥 5. JAGA JIKA BACKEND BALIKIN ID
+      final newId = responseData["kehamilan_id"];
+      if (newId != null && newId.toString().isNotEmpty) {
+        box.write("kehamilan_id", newId);
+      }
+
+      // 🔥 6. REFRESH DASHBOARD
+      await getDashboard();
+
+      // 🔥 7. CLOSE MODAL
+      Get.back();
+
+      // 🔥 8. NOTIFIKASI
+      Get.snackbar(
+        "Berhasil",
+        "Rencana tabungan berhasil disimpan",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0C2D57),
+        colorText: Colors.white,
+      );
+    } else {
+      print("❌ ERROR: ${res.body}");
+      Get.snackbar("Error", "Gagal menyimpan data");
+    }
+  } catch (e) {
+    print("❌ ERROR SAVE: $e");
+    Get.snackbar("Error", "Terjadi kesalahan koneksi");
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+String formatToBackend(String date) {
+  try {
+    if (date.isEmpty) return "";
+
+    // 🔥 Jika sudah format backend (yyyy-MM-dd), langsung pakai
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date)) {
+      return date;
+    }
+
+    // 🔥 Jika format UI (dd-MM-yyyy)
+    if (RegExp(r'^\d{2}-\d{2}-\d{4}$').hasMatch(date)) {
+      final parsed = DateFormat("dd-MM-yyyy").parseStrict(date);
+      return DateFormat("yyyy-MM-dd").format(parsed);
+    }
+
+    // ❌ Format tidak dikenal
+    debugPrint("FORMAT TIDAK DIKENAL: $date");
+    return "";
+  } catch (e) {
+    debugPrint("FORMAT ERROR: $date | $e");
+    return "";
+  }
+}
   Future<void> tambahTransaksi(double val, bool isIncome,
-      {String keterangan = ""}) async {
-    if (val <= 0) return;
+    {String keterangan = ""}) async {
 
-    if (!isIncome && keterangan.isEmpty) {
-      Get.snackbar("Error", "Keterangan wajib diisi");
-      return;
-    }
+  if (val <= 0) return;
 
-    final url = isIncome
-        ? ApiConfig.kalkulatorTabungUrl
-        : ApiConfig.kalkulatorPengeluaranUrl;
-
-    try {
-      final res = await http.post(
-        Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
-        },
-        body: jsonEncode(isIncome
-            ? {"jumlah": val}
-            : {
-                "jumlah": val,
-                "keterangan": keterangan, // 🔥 TAMBAHAN
-                "kategori": "biaya_persalinan"
-              }),
-      );
-
-      if (res.statusCode == 200) {
-        getDashboard();
-      }
-    } catch (e) {
-      debugPrint("ERROR TRANSACTION: $e");
-    }
+  if (!isIncome && keterangan.isEmpty) {
+    Get.snackbar("Error", "Keterangan wajib diisi");
+    return;
   }
+
+  final kehamilanId = box.read("kehamilan_id"); // 🔥 FIX
+
+  final url = isIncome
+      ? ApiConfig.kalkulatorTabungUrl
+      : ApiConfig.kalkulatorPengeluaranUrl;
+
+  try {
+    final res = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode(
+        isIncome
+            ? {
+                "kehamilan_id": kehamilanId, // 🔥 FIX
+                "jumlah": val
+              }
+            : {
+                "kehamilan_id": kehamilanId, // 🔥 FIX
+                "jumlah": val,
+                "keterangan": keterangan,
+                "kategori": "biaya_persalinan"
+              },
+      ),
+    );
+
+    if (res.statusCode == 200) {
+      getDashboard();
+    }
+  } catch (e) {
+    debugPrint("ERROR TRANSACTION: $e");
+  }
+}
 
   bool _dialogShown = false;
 
@@ -559,10 +729,4 @@ class KalkulatorBersalinController extends GetxController {
       ),
     );
   }
-}
-
-// Helper untuk menghindari error jika HomeController belum terpasang
-class _DummyHomeC {
-  var hpht = "01-01-2024".obs;
-  var hpl = "10-10-2024".obs;
 }

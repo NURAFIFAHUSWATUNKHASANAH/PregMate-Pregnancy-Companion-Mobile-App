@@ -14,7 +14,6 @@ class TipsDetailView extends StatefulWidget {
 
 class _TipsDetailViewState extends State<TipsDetailView> {
   VideoPlayerController? _controller;
-
   bool _isPlaying = false;
   bool _isReady = false;
   double _speed = 1.0;
@@ -22,14 +21,12 @@ class _TipsDetailViewState extends State<TipsDetailView> {
   static const Color kMidnightBlue = Color(0xFF0C2D57);
   static const Color kRosePink = Color(0xFFFF8E9E);
   static const Color kSoftBg = Color(0xFFF8F9FD);
+  static const Color kAccentGold = Color(0xFFFFD1D1);
 
   @override
   void initState() {
     super.initState();
-
     final url = widget.data.videoUrl.trim();
-
-    // 🔥 SAFE INIT VIDEO
     if (url.isNotEmpty && Uri.tryParse(url)?.hasAbsolutePath == true) {
       _controller = VideoPlayerController.networkUrl(Uri.parse(url))
         ..initialize().then((_) {
@@ -49,7 +46,6 @@ class _TipsDetailViewState extends State<TipsDetailView> {
 
   void _togglePlay() {
     if (_controller == null) return;
-
     setState(() {
       if (_controller!.value.isPlaying) {
         _controller!.pause();
@@ -63,18 +59,8 @@ class _TipsDetailViewState extends State<TipsDetailView> {
 
   void _changeSpeed() {
     if (_controller == null) return;
-
     setState(() {
-      if (_speed == 0.5) {
-        _speed = 1.0;
-      } else if (_speed == 1.0) {
-        _speed = 1.5;
-      } else if (_speed == 1.5) {
-        _speed = 2.0;
-      } else {
-        _speed = 0.5;
-      }
-
+      _speed = _speed >= 2.0 ? 0.5 : _speed + 0.5;
       _controller!.setPlaybackSpeed(_speed);
     });
   }
@@ -89,8 +75,7 @@ class _TipsDetailViewState extends State<TipsDetailView> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: kMidnightBlue),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: kMidnightBlue),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -102,77 +87,73 @@ class _TipsDetailViewState extends State<TipsDetailView> {
           ),
         ),
       ),
-
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // ================= VIDEO =================
+            // ================= VIDEO PLAYER =================
             Container(
               height: 220,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: kMidnightBlue.withOpacity(0.12),
+                    blurRadius: 25,
+                    offset: const Offset(0, 12),
+                  )
+                ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-
-                    // VIDEO
-                    (_controller != null && _isReady)
-                        ? AspectRatio(
-                            aspectRatio:
-                                _controller!.value.aspectRatio,
-                            child: VideoPlayer(_controller!),
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(
-                                color: kRosePink),
-                          ),
-
-                    // PLAY BUTTON
+                    if (_controller != null && _isReady)
+                      AspectRatio(
+                        aspectRatio: _controller!.value.aspectRatio,
+                        child: VideoPlayer(_controller!),
+                      )
+                    else
+                      const Center(child: CircularProgressIndicator(color: kRosePink)),
+                    
+                    // Overlay & Controls
                     GestureDetector(
                       onTap: _togglePlay,
                       child: Container(
-                        color: Colors.black26,
-                        child: Icon(
-                          _isPlaying
-                              ? Icons.pause_circle
-                              : Icons.play_circle,
-                          size: 70,
-                          color: Colors.white,
+                        color: Colors.black.withOpacity(_isPlaying ? 0 : 0.35),
+                        child: AnimatedScale(
+                          scale: _isPlaying ? 0.8 : 1.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            _isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                            size: 70,
+                            color: Colors.white.withOpacity(0.95),
+                          ),
                         ),
                       ),
                     ),
 
-                    // SPEED
+                    // Speed Control
                     Positioned(
-                      top: 12,
-                      right: 12,
+                      top: 15,
+                      right: 15,
                       child: GestureDetector(
                         onTap: _changeSpeed,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.black54,
-                            borderRadius:
-                                BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(color: Colors.white24),
                           ),
                           child: Text(
                             "${_speed}x",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                         ),
                       ),
@@ -182,129 +163,158 @@ class _TipsDetailViewState extends State<TipsDetailView> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // ================= TITLE =================
+            // ================= INFO SECTION =================
             Text(
-              widget.data.title,
+              widget.data.title.toUpperCase(),
               style: const TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w900,
                 color: kMidnightBlue,
+                letterSpacing: 0.5,
               ),
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: 10),
             Text(
               widget.data.desc,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 color: kMidnightBlue.withOpacity(0.6),
-                height: 1.5,
+                height: 1.6,
+                fontWeight: FontWeight.w500,
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-            // ================= HEADER =================
-            const Text(
-              "Panduan Langkah",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: kMidnightBlue,
-              ),
+            // ================= PANDUAN HEADER =================
+            Row(
+              children: [
+                Container(
+                  width: 6,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: kRosePink,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  "Langkah-langkah",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: kMidnightBlue,
+                  ),
+                ),
+              ],
             ),
+            
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 12),
-
-            // ================= STEPS =================
+            // ================= STEPS LIST (CARD STYLE) =================
             ListView.builder(
               shrinkWrap: true,
+              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.data.steps.isEmpty
-                  ? 0
-                  : widget.data.steps.length,
+              itemCount: widget.data.steps.length,
               itemBuilder: (context, index) {
-                return _stepCard(
+                return _stepItem(
                   index + 1,
                   widget.data.steps[index],
                 );
               },
             ),
-
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  // ================= STEP CARD =================
-  Widget _stepCard(int no, String desc) {
+  Widget _stepItem(int no, String desc) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: kMidnightBlue.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
-        children: [
-
-          // NUMBER
-          Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: kRosePink,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              "$no",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Sidebar Number
+              Container(
+                width: 60,
+                decoration: const BoxDecoration(
+                  color: kRosePink,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "STEP",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "$no",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-
-          const SizedBox(width: 14),
-
-          // TEXT
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Langkah $no",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: kMidnightBlue,
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "LANGKAH $no",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: kMidnightBlue,
+                          fontSize: 13,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        desc,
+                        style: TextStyle(
+                          color: kMidnightBlue.withOpacity(0.7),
+                          fontSize: 15,
+                          height: 1.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  desc,
-                  style: TextStyle(
-                    color: kMidnightBlue.withOpacity(0.7),
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

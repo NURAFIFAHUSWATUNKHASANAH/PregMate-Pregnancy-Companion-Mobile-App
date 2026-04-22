@@ -563,32 +563,43 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildProfileAvatar(Color color) {
-    final profileController = Get.find<ProfileController>();
+  final profileController = Get.find<ProfileController>();
 
-    return Obx(() {
-      final foto = profileController.foto.value;
+  return Obx(() {
+    final foto = profileController.foto.value;
 
-      return Container(
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color.withOpacity(0.5), width: 1.5),
-        ),
-        child: CircleAvatar(
-          radius: 22,
-          backgroundColor: Colors.white24,
-          backgroundImage: (foto.isNotEmpty) ? NetworkImage(foto) : null,
-          child: (foto.isEmpty)
-              ? const Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 26,
+    final imageUrl = foto.isNotEmpty
+        ? "${ApiConfig.baseUrl}/$foto"
+        : "";
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+      ),
+      child: CircleAvatar(
+        radius: 22,
+        backgroundColor: Colors.white24,
+        child: ClipOval(
+          child: imageUrl.isNotEmpty
+              ? Image.network(
+                  imageUrl,
+                  width: 44,
+                  height: 44,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.person,
+                        color: Colors.white, size: 26);
+                  },
                 )
-              : null,
+              : const Icon(Icons.person,
+                  color: Colors.white, size: 26),
         ),
-      );
-    });
-  }
+      ),
+    );
+  });
+}
 
   Widget _buildModernArticleCard(artikel) {
     return GestureDetector(

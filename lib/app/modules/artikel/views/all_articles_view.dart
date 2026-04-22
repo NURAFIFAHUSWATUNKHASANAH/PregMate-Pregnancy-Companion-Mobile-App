@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controllers/artikel_controller.dart';
 import 'package:PregMate/app/modules/artikel/views/article_detail_view.dart';
 
@@ -130,10 +131,14 @@ class AllArtikelView extends StatelessWidget {
                                   children: [
                                     const Icon(Icons.access_time, size: 14, color: Color(0xFF94A3B8)),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      "Baru saja",
-                                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                                    ),
+Text(
+  artikel.createdAt.isNotEmpty
+      ? DateFormat('dd MMM yyyy, HH:mm').format(
+          DateTime.parse(artikel.createdAt),
+        )
+      : "-",
+  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+),
                                   ],
                                 ),
                                 const Text(

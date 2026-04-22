@@ -87,15 +87,23 @@ class JadwalController extends GetxController {
       print("RESPONSE SUBMIT JADWAL: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.back(); // Tutup dialog
-        Get.snackbar(
-          "Berhasil", 
-          "Jadwal berhasil disimpan dan notifikasi dikirim",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
+  // tutup dialog dengan aman (paksa pop sampai root dialog tertutup)
+if (Get.isDialogOpen ?? false) {
+  Get.back(closeOverlays: true);
+}
+
+// kasih delay supaya UI stabil dulu
+Future.delayed(const Duration(milliseconds: 150), () {
+  Get.snackbar(
+    "Berhasil",
+    "Jadwal berhasil disimpan dan notifikasi dikirim",
+    snackPosition: SnackPosition.TOP,
+    backgroundColor: Colors.green,
+    colorText: Colors.white,
+    duration: const Duration(seconds: 2),
+  );
+});
+} else {
         Get.snackbar("Gagal", "Server error: ${response.statusCode}");
       }
     } catch (e) {

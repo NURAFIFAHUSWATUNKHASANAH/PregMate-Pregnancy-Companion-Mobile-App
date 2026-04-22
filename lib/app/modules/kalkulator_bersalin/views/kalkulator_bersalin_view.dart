@@ -197,6 +197,11 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
               "Estimasi Waktu",
               "${controller.sisaBulan.value} bulan ${controller.sisaHari.value} hari lagi",
               Icons.auto_graph_rounded),
+              _rowInfo(
+  "Target Nabung (${controller.metodeNabung.value})",
+  _idr(controller.targetNabung.value),
+  Icons.savings_rounded,
+),
         ],
       ),
     );
@@ -358,7 +363,7 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
                     controller: ketC,
                     style: const TextStyle(fontSize: 14, color: kMidnightBlue),
                     decoration: _inputDecoration(
-                        "Keterangan (Opsional)", Icons.notes_rounded),
+                        "Keterangan", Icons.notes_rounded),
                   ),
                 ],
                 const SizedBox(height: 30),

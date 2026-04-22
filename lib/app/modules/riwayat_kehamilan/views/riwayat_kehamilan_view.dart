@@ -76,9 +76,11 @@ class RiwayatKehamilanView extends GetView<RiwayatKehamilanController> {
               child: Theme(
                 data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
-                  onExpansionChanged: (isOpen) {
-                    if (isOpen) controller.fetchHistoriByKehamilan(item["id"]);
-                  },
+onExpansionChanged: (isOpen) {
+  if (isOpen && item["id"] != null) {
+    controller.fetchHistoriByKehamilan(item["id"]);
+  }
+},
                   tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   leading: Container(
@@ -108,30 +110,57 @@ class RiwayatKehamilanView extends GetView<RiwayatKehamilanController> {
                     // Detail Section
                     _buildInfoRow("Status Kehamilan", item["status"], isStatus: true),
                     
-                    const SizedBox(height: 24),
-                    
-                    // Histori Senam Header
-                    Row(
-                      children: [
-                        Container(
-                          width: 4,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: kRosePink,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          "Histori Latihan Senam",
-                          style: TextStyle(
-                            color: kMidnightBlue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+                    const SizedBox(height: 16),
+
+Row(
+  children: [
+    Container(
+      width: 4,
+      height: 16,
+      decoration: BoxDecoration(
+        color: kRosePink,
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    const SizedBox(width: 8),
+    const Text(
+      "Riwayat Berat Badan",
+      style: TextStyle(
+        color: kMidnightBlue,
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 12),
+
+...(List.from(item["riwayat_bb"] ?? [])).map<Widget>((bb) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: kBackground,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          bb["tanggal"] ?? "-",
+          style: const TextStyle(color: Colors.grey),
+        ),
+        Text(
+          "${bb["berat_badan"] ?? 0} kg",
+          style: const TextStyle(
+            color: kMidnightBlue,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}).toList(),
                     const SizedBox(height: 12),
 
                     Obx(() {
