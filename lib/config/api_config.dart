@@ -16,7 +16,7 @@ class ApiConfig {
   
   // Inisialisasi baseUrl default
   static void init() {
-    _baseUrl = 'http://10.1.126.159:5000';
+    _baseUrl = 'https://web-production-60f9.up.railway.app';
     print('Base URL updated to: $_baseUrl');
   }
   // ---------------- Auth ----------------

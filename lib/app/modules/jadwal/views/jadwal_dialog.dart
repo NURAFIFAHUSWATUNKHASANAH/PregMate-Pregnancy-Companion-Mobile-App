@@ -60,28 +60,37 @@ class _JadwalDialogState extends State<JadwalDialog> {
     }
   }
 
-  void submit() {
-    if (selectedDate == null || selectedTime == null) {
-      Get.snackbar(
-        "Oops!",
-        "Silakan pilih tanggal dan waktu terlebih dahulu",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(15),
-      );
-      return;
-    }
-
-    controller.submitJadwal(
-      selectedDate: selectedDate!,
-      selectedTime: selectedTime!,
-      pesan: pesanController.text.isEmpty
-          ? "Saatnya latihan!"
-          : pesanController.text,
-      context: context,
+  void submit() async {
+  if (selectedDate == null || selectedTime == null) {
+    Get.snackbar(
+      "Oops!",
+      "Silakan pilih tanggal dan waktu terlebih dahulu",
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(15),
     );
+    return;
   }
+
+  final success = await controller.submitJadwal(
+    selectedDate: selectedDate!,
+    selectedTime: selectedTime!,
+    pesan: pesanController.text.isEmpty
+        ? "Saatnya latihan!"
+        : pesanController.text,
+    context: context,
+  );
+
+  // 🔥 RESET FORM SETELAH SUKSES
+  if (success) {
+    setState(() {
+      selectedDate = null;
+      selectedTime = null;
+      pesanController.clear();
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {

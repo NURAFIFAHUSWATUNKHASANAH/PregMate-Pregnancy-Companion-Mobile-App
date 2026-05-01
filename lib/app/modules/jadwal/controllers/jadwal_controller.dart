@@ -82,7 +82,7 @@ Future<void> editJadwal({
   required BuildContext context,
 }) async {
   try {
-    final tanggal = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final tanggal = DateFormat('dd-MM-yyyy').format(selectedDate);
     final jam = selectedTime.format(context);
 
     final url = "${ApiConfig.jadwalUrl}/$id";
@@ -126,78 +126,102 @@ Future<void> editJadwal({
     Get.to(() => const JadwalPage());
   }
 
-  Future<void> submitJadwal({
-    required DateTime selectedDate,
-    required TimeOfDay selectedTime,
-    required String pesan,
-    required BuildContext context,
-  }) async {
-    // Pastikan data terbaru terambil
-    if (userId == null) userId = box.read('user_id');
-    if (kehamilanId == null) kehamilanId = box.read('kehamilan_id');
+  Future<bool> submitJadwal({
+  required DateTime selectedDate,
+  required TimeOfDay selectedTime,
+  required String pesan,
+  required BuildContext context,
+}) async {
+  try {
+    // 🔥 Ambil ulang kalau null
+    userId ??= box.read('user_id');
+    kehamilanId ??= box.read('kehamilan_id');
 
     if (fcmToken == null) {
       fcmToken = await FirebaseMessaging.instance.getToken();
     }
 
+    // 🔥 Validasi wajib
     if (userId == null || fcmToken == null) {
-      Get.snackbar("Error", "Data user belum siap, silakan login ulang.");
-      return;
+      Get.snackbar(
+        "Error",
+        "Data user belum siap, silakan login ulang.",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return false;
     }
 
-    final tanggal = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final tanggal = DateFormat('dd-MM-yyyy').format(selectedDate);
     final jam = selectedTime.format(context);
 
-    try {
-      final url = ApiConfig.jadwalUrl;
+    final url = ApiConfig.jadwalUrl;
 
-      final bodyData = {
-        "user_id": userId,
-        "kehamilan_id": kehamilanId, // Kirim kehamilan_id ke backend
-        "fcmToken": fcmToken,
-        "tanggal": tanggal,
-        "jam": jam,
-        "pesan": pesan,
-        "dikirim": false,
-      };
+    final bodyData = {
+      "user_id": userId,
+      "kehamilan_id": kehamilanId,
+      "fcmToken": fcmToken,
+      "tanggal": tanggal,
+      "jam": jam,
+      "pesan": pesan,
+      "dikirim": false,
+    };
 
-      print("BODY SUBMIT JADWAL: ${jsonEncode(bodyData)}");
+    print("BODY SUBMIT JADWAL: ${jsonEncode(bodyData)}");
 
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(bodyData),
-      );
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(bodyData),
+    );
 
-      print("STATUS SUBMIT JADWAL: ${response.statusCode}");
-      print("RESPONSE SUBMIT JADWAL: ${response.body}");
+    print("STATUS SUBMIT JADWAL: ${response.statusCode}");
+    print("RESPONSE SUBMIT JADWAL: ${response.body}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // tutup dialog dengan aman (paksa pop sampai root dialog tertutup)
-        if (Get.isDialogOpen ?? false) {
-          Get.back(closeOverlays: true);
-        }
-  await fetchJadwal();
-
-// kasih delay supaya UI stabil dulu
-        Future.delayed(const Duration(milliseconds: 150), () {
-          Get.snackbar(
-            "Berhasil",
-            "Jadwal berhasil disimpan dan notifikasi dikirim",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 2),
-          );
-        });
-      } else {
-        Get.snackbar("Gagal", "Server error: ${response.statusCode}");
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // 🔥 Tutup dialog kalau masih kebuka
+      if (Get.isDialogOpen ?? false) {
+        Get.back(closeOverlays: true);
       }
-    } catch (e) {
-      print("ERROR SUBMIT JADWAL: $e");
-      Get.snackbar("Error", "Tidak dapat terhubung ke server");
+
+      // 🔥 Refresh data
+      await fetchJadwal();
+
+      // 🔥 Snackbar (delay biar smooth)
+      Future.delayed(const Duration(milliseconds: 150), () {
+        Get.snackbar(
+          "Berhasil",
+          "Jadwal berhasil disimpan dan notifikasi dikirim",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+      });
+
+      return true; // ✅ PENTING
+    } else {
+      Get.snackbar(
+        "Gagal",
+        "Server error: ${response.statusCode}",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return false;
     }
+  } catch (e) {
+    print("ERROR SUBMIT JADWAL: $e");
+
+    Get.snackbar(
+      "Error",
+      "Tidak dapat terhubung ke server",
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+    );
+
+    return false;
   }
+}
 }

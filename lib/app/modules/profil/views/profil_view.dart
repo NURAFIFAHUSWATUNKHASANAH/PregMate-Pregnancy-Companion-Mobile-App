@@ -181,50 +181,113 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   void _showLogoutDialog() {
-    Get.defaultDialog(
-      title: "Konfirmasi Keluar",
-      titleStyle: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF0C2D57),
+  Get.bottomSheet(
+    Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      content: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: Text(
-          "Apakah Anda yakin ingin keluar?\nSesi Anda akan berakhir.",
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🔥 Handle bar (biar sama kayak diskusi)
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+
+          // 🔥 Icon
+          const Icon(
+            Icons.logout_rounded,
+            color: Colors.redAccent,
+            size: 48,
+          ),
+
+          const SizedBox(height: 16),
+
+          // 🔥 Title
+          const Text(
+            "Keluar dari Akun?",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0C2D57),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // 🔥 Subtitle
+          const Text(
+            "Apakah Bunda yakin ingin keluar?\nSesi login akan berakhir dan perlu masuk kembali.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // 🔥 Button Row
+          Row(
+            children: [
+              // BATAL
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Get.back(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    side: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  child: const Text(
+                    "Batal",
+                    style: TextStyle(color: Color(0xFF0F172A)),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // LOGOUT
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    controller.logout();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    "Ya, Keluar",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      backgroundColor: Colors.white,
-      radius: 20,
-      cancel: OutlinedButton(
-        onPressed: () => Get.back(),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-        child: const Text("Batal", style: TextStyle(color: Color(0xFF64748B))),
-      ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          Get.back();
-          controller.logout();
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red.shade600,
-          elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-        child: const Text("Ya, Keluar",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
+    ),
+    isScrollControlled: true,
+  );
+}
 
   Widget _buildModernMenu({
     required IconData icon,

@@ -138,38 +138,68 @@ class JadwalPage extends StatelessWidget {
         return _buildEmptyState("Belum ada jadwal yang tersimpan.");
       }
 
+      // 🔥 SORT TERBARU DI ATAS
+      final sortedList = List<Map<String, dynamic>>.from(list)
+        ..sort((a, b) {
+          final aDate = parseDateTime(a);
+          final bDate = parseDateTime(b);
+          return bDate.compareTo(aDate); // DESC
+        });
+
       return ListView.builder(
         padding: const EdgeInsets.fromLTRB(24, 10, 24, 100),
-        physics: const BouncingScrollPhysics(),
-        itemCount: list.length,
+        itemCount: sortedList.length,
         itemBuilder: (context, index) {
-          final item = list[index];
+          final item = sortedList[index];
           return _buildModernJadwalCard(context, controller, item);
         },
       );
     });
   }
 
-  Widget _buildModernJadwalCard(BuildContext context, JadwalController controller, Map item) {
+  DateTime parseDateTime(Map item) {
+  try {
+    final tanggal = item['tanggal']; // dd-MM-yyyy
+    final jam = item['jam'];
+
+    // 🔥 SPLIT manual
+    final parts = tanggal.split("-");
+    final day = int.parse(parts[0]);
+    final month = int.parse(parts[1]);
+    final year = int.parse(parts[2]);
+
+    final timeParts = jam.split(":");
+    int hour = int.parse(timeParts[0]);
+    int minute = int.parse(timeParts[1].split(" ")[0]);
+
+    if (jam.toLowerCase().contains("pm") && hour < 12) {
+      hour += 12;
+    }
+    if (jam.toLowerCase().contains("am") && hour == 12) {
+      hour = 0;
+    }
+
+    return DateTime(year, month, day, hour, minute);
+  } catch (e) {
+    return DateTime.now();
+  }
+}
+
+  Widget _buildModernJadwalCard(
+      BuildContext context, JadwalController controller, Map item) {
+    final selesai = isJadwalSelesai(item);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white, // 🔥 tetap putih (tidak abu)
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: primaryDark.withOpacity(0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ikon Kalender Bergaya Modern
           Container(
             width: 50,
             height: 50,
@@ -177,10 +207,10 @@ class JadwalPage extends StatelessWidget {
               color: accentPink.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(Icons.calendar_today_rounded, color: accentPink, size: 24),
+            child: Icon(Icons.calendar_today_rounded, color: accentPink),
           ),
           const SizedBox(width: 16),
-          // Konten Jadwal
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,64 +221,107 @@ class JadwalPage extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
                     color: primaryDark,
+                    // ❌ HAPUS lineThrough
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 Row(
                   children: [
-                    Icon(Icons.access_time_filled_rounded, size: 14, color: greyText),
+                    Icon(Icons.access_time_filled_rounded,
+                        size: 14, color: greyText),
                     const SizedBox(width: 4),
                     Text(
                       "${item['tanggal']} • ${item['jam']}",
                       style: TextStyle(
                         fontSize: 13,
                         color: greyText,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
+
+                // 🔥 LABEL SELESAI (OPSIONAL)
+                if (selesai) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      "Selesai",
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ]
               ],
             ),
           ),
-          // Menu Aksi (Edit & Delete)
-          _buildActionMenu(context, controller, item),
+
+          // 🔥 ACTION: kalau selesai → hanya delete
+          _buildActionMenu(context, controller, item, selesai),
         ],
       ),
     );
   }
 
-  Widget _buildActionMenu(BuildContext context, JadwalController controller, Map item) {
+  Widget _buildActionMenu(BuildContext context, JadwalController controller,
+      Map item, bool selesai) {
     return PopupMenuButton(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 10,
       icon: Icon(Icons.more_vert_rounded, color: primaryDark.withOpacity(0.3)),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: "edit",
-          child: Row(
-            children: [
-              Icon(Icons.edit_note_rounded, size: 20, color: primaryDark),
-              const SizedBox(width: 12),
-              const Text("Edit Jadwal", style: TextStyle(fontWeight: FontWeight.w600)),
-            ],
+      itemBuilder: (context) {
+        List<PopupMenuEntry> menu = [];
+
+        // 🔥 kalau BELUM selesai → boleh edit
+        if (!selesai) {
+          menu.add(
+            PopupMenuItem(
+              value: "edit",
+              child: Row(
+                children: [
+                  Icon(Icons.edit_note_rounded, size: 20, color: primaryDark),
+                  const SizedBox(width: 12),
+                  const Text("Edit Jadwal",
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // 🔥 delete selalu ada
+        menu.add(
+          PopupMenuItem(
+            value: "delete",
+            child: Row(
+              children: [
+                const Icon(Icons.delete_outline_rounded,
+                    color: Colors.redAccent, size: 20),
+                const SizedBox(width: 12),
+                const Text("Hapus",
+                    style: TextStyle(
+                        color: Colors.redAccent, fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: "delete",
-          child: Row(
-            children: [
-              const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-              const SizedBox(width: 12),
-              const Text("Hapus", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-      ],
+        );
+
+        return menu;
+      },
       onSelected: (value) {
         if (value == "delete") {
           _showDeleteJadwal(context, controller, item['_id']);
-        } else {
+        } else if (value == "edit") {
           _showEditJadwal(context, controller, item);
         }
       },
@@ -260,7 +333,8 @@ class JadwalPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_note_rounded, size: 80, color: accentPink.withOpacity(0.2)),
+          Icon(Icons.event_note_rounded,
+              size: 80, color: accentPink.withOpacity(0.2)),
           const SizedBox(height: 16),
           Text(
             msg,
@@ -306,7 +380,8 @@ void _showDeleteJadwal(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 48),
+          const Icon(Icons.delete_sweep_rounded,
+              color: Colors.redAccent, size: 48),
           const SizedBox(height: 16),
           const Text(
             "Hapus Jadwal?",
@@ -320,7 +395,8 @@ void _showDeleteJadwal(
           const Text(
             "Apakah Bunda yakin ingin menghapus jadwal ini? Data yang dihapus tidak dapat dikembalikan.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF64748B), fontSize: 14), // textGrey
+            style:
+                TextStyle(color: Color(0xFF64748B), fontSize: 14), // textGrey
           ),
           const SizedBox(height: 24),
           Row(
@@ -334,7 +410,8 @@ void _showDeleteJadwal(
                         borderRadius: BorderRadius.circular(14)),
                     side: BorderSide(color: Colors.grey[300]!),
                   ),
-                  child: const Text("Batal", style: TextStyle(color: Color(0xFF0F172A))),
+                  child: const Text("Batal",
+                      style: TextStyle(color: Color(0xFF0F172A))),
                 ),
               ),
               const SizedBox(width: 12),
@@ -365,13 +442,35 @@ void _showDeleteJadwal(
   );
 }
 
-void _showEditJadwal(BuildContext context, JadwalController controller, Map item) {
-  final TextEditingController pesanController = TextEditingController(text: item['pesan']);
-  DateTime selectedDate = DateTime.parse(item['tanggal']);
-  TimeOfDay selectedTime = TimeOfDay(
-    hour: int.parse(item['jam'].split(":")[0]),
-    minute: int.parse(item['jam'].split(":")[1]),
+void _showEditJadwal(
+    BuildContext context, JadwalController controller, Map item) {
+
+  final TextEditingController pesanController =
+      TextEditingController(text: item['pesan']);
+
+  /// 🔥 PARSE TANGGAL (dd-MM-yyyy)
+  final tanggalParts = item['tanggal'].split("-");
+  DateTime selectedDate = DateTime(
+    int.parse(tanggalParts[2]), // year
+    int.parse(tanggalParts[1]), // month
+    int.parse(tanggalParts[0]), // day
   );
+
+  /// 🔥 PARSE JAM (SUPPORT AM/PM)
+  final jam = item['jam'];
+  final timeParts = jam.split(":");
+
+  int hour = int.parse(timeParts[0]);
+  int minute = int.parse(timeParts[1].split(" ")[0]);
+
+  if (jam.toLowerCase().contains("pm") && hour < 12) {
+    hour += 12;
+  }
+  if (jam.toLowerCase().contains("am") && hour == 12) {
+    hour = 0;
+  }
+
+  TimeOfDay selectedTime = TimeOfDay(hour: hour, minute: minute);
 
   Get.bottomSheet(
     StatefulBuilder(
@@ -385,23 +484,39 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              /// HANDLE
               Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
+
+              /// TITLE
               const Text(
                 "Perbarui Jadwal",
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF0C2D57)),
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  color: Color(0xFF0C2D57),
+                ),
               ),
+
               const SizedBox(height: 24),
-              // Input Field Modern
+
+              /// INPUT PESAN
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF0C2D57).withOpacity(0.05)),
+                  border: Border.all(
+                    color: const Color(0xFF0C2D57).withOpacity(0.05),
+                  ),
                 ),
                 child: TextField(
                   controller: pesanController,
@@ -409,17 +524,21 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
                   decoration: const InputDecoration(
                     hintText: "Ubah kegiatan Bunda...",
                     border: InputBorder.none,
-                    icon: Icon(Icons.edit_note_rounded, color: Color(0xFF0C2D57)),
+                    icon: Icon(Icons.edit_note_rounded,
+                        color: Color(0xFF0C2D57)),
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
-              // Pickers
+
+              /// DATE & TIME PICKER
               Row(
                 children: [
                   _buildSmallPicker(
                     icon: Icons.calendar_today_rounded,
-                    label: "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
+                    label:
+                        "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}",
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,
@@ -427,10 +546,14 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
                         firstDate: DateTime(2020),
                         lastDate: DateTime(2030),
                       );
-                      if (date != null) setState(() => selectedDate = date);
+                      if (date != null) {
+                        setState(() => selectedDate = date);
+                      }
                     },
                   ),
+
                   const SizedBox(width: 12),
+
                   _buildSmallPicker(
                     icon: Icons.access_time_rounded,
                     label: selectedTime.format(context),
@@ -439,12 +562,17 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
                         context: context,
                         initialTime: selectedTime,
                       );
-                      if (time != null) setState(() => selectedTime = time);
+                      if (time != null) {
+                        setState(() => selectedTime = time);
+                      }
                     },
                   ),
                 ],
               ),
+
               const SizedBox(height: 32),
+
+              /// BUTTON SIMPAN
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -456,6 +584,7 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
                       pesan: pesanController.text,
                       context: context,
                     );
+
                     Get.back();
                     controller.fetchJadwal();
                   },
@@ -463,11 +592,20 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
                     backgroundColor: const Color(0xFF0C2D57),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 5,
-                    shadowColor: const Color(0xFF0C2D57).withOpacity(0.3),
+                    shadowColor:
+                        const Color(0xFF0C2D57).withOpacity(0.3),
                   ),
-                  child: const Text("Simpan Perubahan", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                  child: const Text(
+                    "Simpan",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -479,7 +617,50 @@ void _showEditJadwal(BuildContext context, JadwalController controller, Map item
   );
 }
 
-Widget _buildSmallPicker({required IconData icon, required String label, required VoidCallback onTap}) {
+bool isJadwalSelesai(Map item) {
+  try {
+    final tanggal = item['tanggal']; // yyyy-MM-dd
+    final jam = item['jam']; // bisa HH:mm atau 2:30 PM
+
+    // parse tanggal
+    final parts = tanggal.split("-");
+final day = int.parse(parts[0]);
+final month = int.parse(parts[1]);
+final year = int.parse(parts[2]);
+
+final date = DateTime(year, month, day);
+
+    // parse jam manual
+    final timeParts = jam.split(":");
+    int hour = int.parse(timeParts[0]);
+    int minute = int.parse(timeParts[1].split(" ")[0]);
+
+    // handle AM/PM
+    if (jam.toLowerCase().contains("pm") && hour < 12) {
+      hour += 12;
+    }
+    if (jam.toLowerCase().contains("am") && hour == 12) {
+      hour = 0;
+    }
+
+    final finalDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+
+    return finalDateTime.isBefore(DateTime.now());
+  } catch (e) {
+    return false;
+  }
+}
+
+Widget _buildSmallPicker(
+    {required IconData icon,
+    required String label,
+    required VoidCallback onTap}) {
   return Expanded(
     child: InkWell(
       onTap: onTap,
@@ -495,7 +676,11 @@ Widget _buildSmallPicker({required IconData icon, required String label, require
           children: [
             Icon(icon, size: 16, color: const Color(0xFFFF8E9E)),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF8E9E))),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF8E9E))),
           ],
         ),
       ),
