@@ -1,9 +1,11 @@
 class Comment {
+  final String userId;
   final String user;
   final String? userPhoto;
   final String content;
 
   Comment({
+    required this.userId,
     required this.user,
     this.userPhoto,
     required this.content,
@@ -11,6 +13,7 @@ class Comment {
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
+      userId: json["user_id"]?.toString() ?? "",
       user: json["user_name"] ?? "Pengguna",
       userPhoto: json["user_photo"],
       content: json["content"] ?? "",

@@ -81,19 +81,7 @@ class DiskusiView extends StatelessWidget {
               letterSpacing: -1,
             ),
           ),
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: primaryBlue.withOpacity(0.05),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.search_rounded, color: primaryBlue, size: 22),
-                onPressed: () {},
-              ),
-            ),
-          ],
+
           bottom: TabBar(
             labelColor: primaryBlue,
             unselectedLabelColor: textGrey,
@@ -129,37 +117,36 @@ class DiskusiView extends StatelessWidget {
 
             // TAB 2: DISKUSI SAYA
             Obx(() {
-  if (controller.isLoading.value) return _buildShimmerLoading();
+              if (controller.isLoading.value) return _buildShimmerLoading();
 
-  return SafeArea(
-    child: ListView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      children: [
-        _buildPostInput(),
-
-        controller.myPosts.isEmpty
-            ? _buildEmptyState()
-            : GridView.builder(
-                padding: const EdgeInsets.all(16),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1,
+              return SafeArea(
+                child: ListView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                  ),
+                  children: [
+                    _buildPostInput(),
+                    controller.myPosts.isEmpty
+                        ? _buildEmptyState()
+                        : GridView.builder(
+                            padding: const EdgeInsets.all(16),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1,
+                            ),
+                            itemCount: controller.myPosts.length,
+                            itemBuilder: (context, index) =>
+                                _buildGridPostCard(controller.myPosts[index]),
+                          ),
+                  ],
                 ),
-                itemCount: controller.myPosts.length,
-                itemBuilder: (context, index) =>
-                    _buildGridPostCard(controller.myPosts[index]),
-              ),
-      ],
-    ),
-  );
-}),
+              );
+            }),
           ],
         ),
       ),
@@ -258,149 +245,145 @@ class DiskusiView extends StatelessWidget {
 
   // --- INPUT POST CARD ---
   Widget _buildPostInput() {
-  return SingleChildScrollView(
-    padding: EdgeInsets.only(
-      bottom: MediaQuery.of(Get.context!).viewInsets.bottom,
-    ),
-    child: Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: primaryBlue.withOpacity(0.08),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          )
-        ],
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(Get.context!).viewInsets.bottom,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// PREVIEW GAMBAR
-          Obx(() => controller.selectedImage.value != null
-              ? Stack(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      height: 160,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        image: DecorationImage(
-                          image:
-                              FileImage(controller.selectedImage.value!),
-                          fit: BoxFit.cover,
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: primaryBlue.withOpacity(0.08),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// PREVIEW GAMBAR
+            Obx(() => controller.selectedImage.value != null
+                ? Stack(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        height: 160,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          image: DecorationImage(
+                            image: FileImage(controller.selectedImage.value!),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: _buildCloseBtn(
-                        () => controller.selectedImage.value = null,
-                      ),
-                    ),
-                  ],
-                )
-              : const SizedBox()),
-
-          /// INPUT TEXT
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Obx(() => CircleAvatar(
-                    radius: 22,
-                    backgroundColor: bgLight,
-                    backgroundImage:
-                        controller.fotoUser.value.isNotEmpty
-                            ? NetworkImage(
-                                "${ApiConfig.baseUrl}/${controller.fotoUser.value}")
-                            : null,
-                    child: controller.fotoUser.value.isEmpty
-                        ? Icon(Icons.person_2_rounded, color: textGrey)
-                        : null,
-                  )),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: controller.postController,
-                  maxLines: null,
-                  style: TextStyle(
-                    color: textDark,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: "Apa yang Bunda pikirkan?",
-                    hintStyle:
-                        TextStyle(color: textGrey.withOpacity(0.5)),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const Divider(height: 24, thickness: 0.5),
-
-          /// ACTION BUTTON
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () => controller.pickImage(),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: accentBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.image_outlined,
-                          size: 20, color: accentBlue),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Foto",
-                        style: TextStyle(
-                          color: accentBlue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: _buildCloseBtn(
+                          () => controller.selectedImage.value = null,
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ),
+                  )
+                : const SizedBox()),
 
-              /// BUTTON POST
-              ElevatedButton(
-                onPressed: () => controller.addPost(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+            /// INPUT TEXT
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Obx(() => CircleAvatar(
+                      radius: 22,
+                      backgroundColor: bgLight,
+                      backgroundImage: controller.fotoUser.value.isNotEmpty
+                          ? NetworkImage(
+                              "${ApiConfig.baseUrl}/${controller.fotoUser.value}")
+                          : null,
+                      child: controller.fotoUser.value.isEmpty
+                          ? Icon(Icons.person_2_rounded, color: textGrey)
+                          : null,
+                    )),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: controller.postController,
+                    maxLines: null,
+                    style: TextStyle(
+                      color: textDark,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "Apa yang Bunda pikirkan?",
+                      hintStyle: TextStyle(color: textGrey.withOpacity(0.5)),
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  "Posting",
-                  style: TextStyle(fontWeight: FontWeight.w800),
+              ],
+            ),
+
+            const Divider(height: 24, thickness: 0.5),
+
+            /// ACTION BUTTON
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => controller.pickImage(),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: accentBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.image_outlined, size: 20, color: accentBlue),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Foto",
+                          style: TextStyle(
+                            color: accentBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+
+                /// BUTTON POST
+                ElevatedButton(
+                  onPressed: () => controller.addPost(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryBlue,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    "Posting",
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // --- SEMUA DISKUSI: MAIN CARD ---
   Widget _buildPostCard(Post post) {
@@ -517,22 +500,94 @@ class DiskusiView extends StatelessWidget {
       ],
       onSelected: (val) {
         if (val == "delete") {
-          Get.defaultDialog(
-            title: "Hapus Diskusi?",
-            middleText: "Postingan Bunda akan dihapus permanen.",
-            textConfirm: "Hapus",
-            textCancel: "Batal",
-            confirmTextColor: Colors.white,
-            buttonColor: Colors.red,
-            onConfirm: () {
-              controller.deletePost(post.id);
-              Get.back();
-            },
-          );
+          // GANTI DARI Get.defaultDialog KE SINI:
+          _showDeletePostConfirmation(post.id);
         } else {
           _showEditDialog(post);
         }
       },
+    );
+  }
+
+// --- FUNCTION: DIALOG HAPUS POSTINGAN ---
+  void _showDeletePostConfirmation(String postId) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const Icon(Icons.delete_sweep_rounded,
+                color: Colors.redAccent, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              "Hapus Diskusi?",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: primaryBlue,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Apakah Bunda yakin ingin menghapus postingan ini secara permanen? Seluruh komentar di dalamnya juga akan ikut terhapus.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: textGrey, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    child: Text("Batal", style: TextStyle(color: textDark)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      controller.deletePost(postId);
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    child: const Text("Hapus Postingan",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 

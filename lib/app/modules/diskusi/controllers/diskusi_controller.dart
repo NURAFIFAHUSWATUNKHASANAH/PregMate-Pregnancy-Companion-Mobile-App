@@ -11,7 +11,6 @@ import 'package:PregMate/app/modules/diskusi/models/post_model.dart';
 import 'package:PregMate/config/api_config.dart';
 
 class DiskusiController extends GetxController {
-
   /// =========================
   /// STORAGE (GET STORAGE ONLY)
   /// =========================
@@ -52,7 +51,6 @@ class DiskusiController extends GetxController {
   /// LOAD USER (GET STORAGE)
   /// =========================
   Future<void> loadUser() async {
-
     userId.value = box.read("user_id") ?? "";
     namaUser.value = box.read("user_nama") ?? "";
     fotoUser.value = box.read("user_foto") ?? "";
@@ -75,7 +73,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> fetchUserProfile() async {
     try {
-
       final token = getToken();
       if (token == null) return;
 
@@ -93,7 +90,6 @@ class DiskusiController extends GetxController {
         box.write("user_nama", namaUser.value);
         box.write("user_foto", fotoUser.value);
       }
-
     } catch (e) {
       print("ERROR PROFILE: $e");
     }
@@ -104,7 +100,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> fetchPosts() async {
     try {
-
       isLoading.value = true;
 
       final response = await http.get(
@@ -112,7 +107,6 @@ class DiskusiController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-
         List data = jsonDecode(response.body);
 
         posts.value = data.map((e) => Post.fromJson(e)).toList();
@@ -123,7 +117,6 @@ class DiskusiController extends GetxController {
               userId.value.toString().trim();
         }).toList();
       }
-
     } catch (e) {
       print("ERROR FETCH POSTS: $e");
     }
@@ -147,7 +140,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> addPost() async {
     try {
-
       final token = getToken();
 
       var request = http.MultipartRequest(
@@ -176,7 +168,6 @@ class DiskusiController extends GetxController {
         selectedImage.value = null;
         fetchPosts();
       }
-
     } catch (e) {
       print("ERROR ADD POST: $e");
     }
@@ -187,7 +178,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> addComment(String postId, String content) async {
     try {
-
       final token = getToken();
 
       await http.post(
@@ -196,14 +186,10 @@ class DiskusiController extends GetxController {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: jsonEncode({
-          "user_id": userId.value,
-          "content": content
-        }),
+        body: jsonEncode({"user_id": userId.value, "content": content}),
       );
 
       fetchPosts();
-
     } catch (e) {
       print("ERROR COMMENT: $e");
     }
@@ -214,7 +200,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> likePost(String postId) async {
     try {
-
       final token = getToken();
 
       await http.post(
@@ -229,7 +214,6 @@ class DiskusiController extends GetxController {
       );
 
       fetchPosts();
-
     } catch (e) {
       print("ERROR LIKE: $e");
     }
@@ -240,7 +224,6 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> deletePost(String postId) async {
     try {
-
       final token = getToken();
 
       final response = await http.delete(
@@ -254,7 +237,6 @@ class DiskusiController extends GetxController {
       if (response.statusCode == 200) {
         fetchPosts();
       }
-
     } catch (e) {
       print("ERROR DELETE: $e");
     }
@@ -263,38 +245,64 @@ class DiskusiController extends GetxController {
   /// =========================
   /// EDIT (ONLY OWNER SAFE)
   /// =========================
-Future<void> editPost(String postId, String content) async {
-  try {
-    final token = getToken();
+  Future<void> editPost(String postId, String content) async {
+    try {
+      final token = getToken();
 
-    var request = http.MultipartRequest(
-      "PUT",
-      Uri.parse("${ApiConfig.diskusiUrl}/$postId"),
-    );
-
-    request.headers["Authorization"] = "Bearer $token";
-
-    request.fields["content"] = content;
-    request.fields["user_id"] = userId.value;
-
-    // 🔥 kalau user pilih gambar baru
-    if (selectedImage.value != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          "image",
-          selectedImage.value!.path,
-        ),
+      var request = http.MultipartRequest(
+        "PUT",
+        Uri.parse("${ApiConfig.diskusiUrl}/$postId"),
       );
-    }
 
-    var response = await request.send();
+      request.headers["Authorization"] = "Bearer $token";
 
-    if (response.statusCode == 200) {
-      selectedImage.value = null;
-      fetchPosts();
+      request.fields["content"] = content;
+      request.fields["user_id"] = userId.value;
+
+      // 🔥 kalau user pilih gambar baru
+      if (selectedImage.value != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            "image",
+            selectedImage.value!.path,
+          ),
+        );
+      }
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        selectedImage.value = null;
+        fetchPosts();
+      }
+    } catch (e) {
+      print("ERROR EDIT: $e");
     }
-  } catch (e) {
-    print("ERROR EDIT: $e");
   }
+
+  Future<void> deleteComment(String postId, int index) async {
+  final token = getToken();
+
+  await http.delete(
+    Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
+    headers: {"Authorization": "Bearer $token"},
+  );
+
+  fetchPosts();
+}
+
+Future<void> editComment(String postId, int index, String content) async {
+  final token = getToken();
+
+  await http.put(
+    Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token",
+    },
+    body: jsonEncode({"content": content}),
+  );
+
+  fetchPosts();
 }
 }
