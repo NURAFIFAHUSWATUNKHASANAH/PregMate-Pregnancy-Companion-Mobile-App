@@ -22,7 +22,8 @@ class MeditationView extends GetView<MeditationController> {
           child: CircleAvatar(
             backgroundColor: kMidnightBlue.withOpacity(0.05),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: kMidnightBlue),
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  size: 18, color: kMidnightBlue),
               onPressed: () => Get.back(),
             ),
           ),
@@ -50,7 +51,7 @@ class MeditationView extends GetView<MeditationController> {
           physics: const BouncingScrollPhysics(),
           itemBuilder: (context, index) {
             final session = controller.breathingSessions[index];
-            
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: _buildMeditationCard(
@@ -64,6 +65,8 @@ class MeditationView extends GetView<MeditationController> {
                   Get.to(() => BreathingSessionView(
                         title: session["title"] ?? "Meditasi",
                         duration: session["duration"] ?? 60,
+                        inhaleDuration: session["inhale_duration"] ?? 4,
+                        exhaleDuration: session["exhale_duration"] ?? 4,
                       ));
                 },
               ),
@@ -115,7 +118,7 @@ class MeditationView extends GetView<MeditationController> {
                   child: Icon(Icons.self_improvement, color: pink, size: 32),
                 ),
                 const SizedBox(width: 20),
-                
+
                 // Text Content
                 Expanded(
                   child: Column(
@@ -143,7 +146,8 @@ class MeditationView extends GetView<MeditationController> {
                       const SizedBox(height: 8),
                       // Duration Tag
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: blue.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(8),
@@ -151,7 +155,8 @@ class MeditationView extends GetView<MeditationController> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.timer_outlined, size: 14, color: blue.withOpacity(0.6)),
+                            Icon(Icons.timer_outlined,
+                                size: 14, color: blue.withOpacity(0.6)),
                             const SizedBox(width: 4),
                             Text(
                               duration,
@@ -167,7 +172,7 @@ class MeditationView extends GetView<MeditationController> {
                     ],
                   ),
                 ),
-                
+
                 // Play Button
                 Container(
                   width: 44,
@@ -183,7 +188,8 @@ class MeditationView extends GetView<MeditationController> {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                  child: const Icon(Icons.play_arrow_rounded,
+                      color: Colors.white, size: 28),
                 ),
               ],
             ),

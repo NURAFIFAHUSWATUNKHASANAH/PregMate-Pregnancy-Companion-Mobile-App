@@ -34,7 +34,7 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
           IconButton(
             icon: const Icon(Icons.settings_suggest_rounded,
                 color: kMidnightBlue, size: 28),
-            onPressed: () => _showConfigSheet(context),
+            onPressed: () => controller.showConfigSheet(context),
           ),
           const SizedBox(width: 8),
         ],
@@ -207,26 +207,35 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
     );
   }
 
-  Widget _historyList() {
-    return Obx(() {
-      if (controller.listTransaksi.isEmpty) {
-        return const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child:
-                Text("Belum ada riwayat", style: TextStyle(color: kTextLight)),
+ Widget _historyList() {
+  return Obx(() {
+    if (controller.listTransaksi.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            "Belum ada riwayat",
+            style: TextStyle(color: kTextLight),
           ),
-        );
-      }
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.listTransaksi.length,
-        itemBuilder: (context, index) {
-          final item = controller.listTransaksi[index];
-          bool isMasuk = item["tipe"] == "masuk";
+        ),
+      );
+    }
 
-          return Container(
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: controller.listTransaksi.length,
+      itemBuilder: (context, index) {
+        final item = controller.listTransaksi[index];
+        bool isMasuk = item["tipe"] == "masuk";
+
+        final jumlah = (item["jumlah"] ?? 0).toDouble();
+
+        return GestureDetector(
+          onLongPress: () {
+            _showEditHistorySheet(item);
+          },
+          child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -235,6 +244,7 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
             ),
             child: Row(
               children: [
+                // ICON
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -249,7 +259,10 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
                     size: 20,
                   ),
                 ),
+
                 const SizedBox(width: 15),
+
+                // INFO
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,40 +270,345 @@ class KalkulatorBersalinView extends GetView<KalkulatorBersalinController> {
                       Text(
                         isMasuk ? "Tabungan Masuk" : "Pengeluaran",
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: kMidnightBlue),
+                          fontWeight: FontWeight.bold,
+                          color: kMidnightBlue,
+                        ),
                       ),
+
                       if (!isMasuk &&
                           item["keterangan"] != null &&
                           item["keterangan"].toString().isNotEmpty)
                         Text(
                           item["keterangan"],
                           style: const TextStyle(
-                              fontSize: 11,
-                              color: kRosePink,
-                              fontWeight: FontWeight.w500),
+                            fontSize: 11,
+                            color: kRosePink,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
+
                       Text(
                         item["tanggal"] ?? "Baru saja",
-                        style: const TextStyle(fontSize: 11, color: kTextLight),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: kTextLight,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Text(
-                  "${isMasuk ? '+' : '-'} ${_idr((item["jumlah"] ?? 0).toDouble())}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: isMasuk ? kSuccess : kRosePink,
-                    fontSize: 13,
-                  ),
+
+                // NOMINAL + MENU
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${isMasuk ? '+' : '-'} ${_idr(jumlah)}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: isMasuk ? kSuccess : kRosePink,
+                        fontSize: 13,
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    PopupMenuButton(
+  icon: const Icon(Icons.more_vert, size: 18),
+  onSelected: (value) {
+    if (value == "edit") {
+      _showEditHistorySheet(item);
+    } else if (value == "delete") {
+      _showDeleteHistoryDialog(item["_id"]);
+    }
+  },
+  itemBuilder: (context) => const [
+    PopupMenuItem(value: "edit", child: Text("Edit")),
+    PopupMenuItem(value: "delete", child: Text("Hapus")),
+  ],
+),
+                  ],
                 ),
               ],
             ),
-          );
-        },
-      );
-    });
-  }
+          ),
+        );
+      },
+    );
+  });
+}
+
+void _showEditHistorySheet(dynamic item) {
+  bool isMasuk = item["tipe"] == "masuk";
+
+  // ✅ FIX: format awal biar tidak 234539.0
+  TextEditingController nominalC = TextEditingController(
+    text: NumberFormat("#,###", "id_ID")
+        .format((item["jumlah"] ?? 0).toDouble()),
+  );
+
+  TextEditingController ketC =
+      TextEditingController(text: item["keterangan"] ?? "");
+
+  Get.bottomSheet(
+    isScrollControlled: true,
+    Padding(
+      padding: EdgeInsets.only(bottom: Get.mediaQuery.viewInsets.bottom),
+      child: Container(
+        padding: const EdgeInsets.all(30),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // HANDLE
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ICON
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: (isMasuk ? kSuccess : kRosePink).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.edit_rounded,
+                  color: isMasuk ? kSuccess : kRosePink,
+                  size: 30,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Text(
+                isMasuk ? "Edit Tabungan" : "Edit Pengeluaran",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: kMidnightBlue,
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              // NOMINAL (SAMA PERSIS ADD TRANSAKSI)
+              TextField(
+                controller: nominalC,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  RupiahInputFormatter(), // ✅ sama dengan tambah transaksi
+                ],
+                autofocus: true,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: kMidnightBlue,
+                ),
+                decoration: InputDecoration(
+                  hintText: "0",
+                  hintStyle:
+                      TextStyle(color: kMidnightBlue.withOpacity(0.2)),
+                  border: InputBorder.none,
+                  prefixText: "Rp ",
+                  prefixStyle: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: kTextLight,
+                  ),
+                ),
+              ),
+
+              // KETERANGAN
+              if (!isMasuk) ...[
+                const SizedBox(height: 15),
+                TextField(
+                  controller: ketC,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: kMidnightBlue,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Keterangan",
+                    filled: true,
+                    fillColor: kBgColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 30),
+
+              // BUTTON
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isMasuk ? kMidnightBlue : kRosePink,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () async {
+                    double val = parseRupiah(nominalC.text);
+
+                    if (val <= 0) {
+                      Get.snackbar("Validasi", "Nominal tidak boleh 0");
+                      return;
+                    }
+
+                    await controller.editRiwayat(
+                      riwayatId: item["_id"],
+                      jumlah: val,
+                      keterangan: ketC.text,
+                    );
+
+                    Get.back();
+                  },
+                  child: const Text(
+                    "Simpan Perubahan",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+void _showDeleteHistoryDialog(String id) {
+  Get.bottomSheet(
+    Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 18),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+
+          const Icon(
+            Icons.delete_sweep_rounded,
+            color: Colors.redAccent,
+            size: 48,
+          ),
+
+          const SizedBox(height: 14),
+
+          const Text(
+            "Hapus Riwayat?",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: kMidnightBlue,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          const Text(
+            "Data transaksi ini akan dihapus permanen.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: kTextLight,
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          Row(
+            children: [
+              // ❌ BATAL (TEKS HITAM)
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Get.back(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  child: const Text(
+                    "Batal",
+                    style: TextStyle(
+                      color: Colors.black, // ✅ FIX DI SINI
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // 🔥 HAPUS (TEKS PUTIH)
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await controller.deleteRiwayat(id);
+                    Get.back();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    "Hapus",
+                    style: TextStyle(
+                      color: Colors.white, // ✅ FIX DI SINI
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+    isScrollControlled: true,
+  );
+}
 
   void _showTransactionSheet(bool isIn) {
     TextEditingController amountC = TextEditingController();

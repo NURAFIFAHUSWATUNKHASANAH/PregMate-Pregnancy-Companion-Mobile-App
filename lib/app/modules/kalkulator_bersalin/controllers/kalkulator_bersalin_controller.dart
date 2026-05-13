@@ -56,29 +56,44 @@ final homeC = Get.find<HomeController>();
     super.onReady();
   }
 
-  void showConfigSheet(BuildContext context) {
-    // 🔥 Sinkronisasi nilai awal
-    biayaController.text =
-        totalKebutuhan.value > 0 ? totalKebutuhan.value.toInt().toString() : "";
+void showConfigSheet(BuildContext context) {
+  // 🔥 sinkron nilai awal
+  biayaController.text =
+      totalKebutuhan.value > 0 ? totalKebutuhan.value.toInt().toString() : "";
 
-    Get.bottomSheet(
-      isScrollControlled: true,
-      Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+  totalBiaya.value = totalKebutuhan.value;
+
+  if (metodeNabung.value.isEmpty) {
+    metodeNabung.value = "bulanan";
+  }
+
+  Get.bottomSheet(
+    isScrollControlled: true,
+    enableDrag: true,
+    Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
         ),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
+
+        // 🔥 BATAS HEIGHT BIAR GA HILANG
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: Get.height * 0.85,
           ),
+
           child: SingleChildScrollView(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // 🔥 Drag Indicator
+
+                // ================= HEADER =================
                 Center(
                   child: Container(
                     width: 40,
@@ -90,77 +105,22 @@ final homeC = Get.find<HomeController>();
                   ),
                 ),
 
-                const SizedBox(height: 25),
-
-                // 🔥 Title
-                const Text(
-                  "Konfigurasi Target",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF0C2D57),
-                  ),
-                ),
-
-                const SizedBox(height: 25),
-
-                // 🔥 Input
-                TextField(
-                  controller: biayaController,
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) => totalBiaya.value = double.tryParse(v) ?? 0,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.account_balance_wallet_rounded,
-                        color: Color(0xFF0C2D57)),
-                    labelText: "Target Biaya Persalinan (Rp)",
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF0C2D57), width: 1),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 25),
                 const SizedBox(height: 20),
 
-const Text(
-  "Metode Menabung",
-  style: TextStyle(
-    fontWeight: FontWeight.w900,
-    color: Color(0xFF0C2D57),
-  ),
-),
+                Obx(() => Text(
+                      totalKebutuhan.value > 0
+                          ? "Edit Konfigurasi Target"
+                          : "Konfigurasi Target",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0C2D57),
+                      ),
+                    )),
 
-const SizedBox(height: 10),
+                const SizedBox(height: 25),
 
-Obx(() => Row(
-  children: [
-    Expanded(
-      child: ChoiceChip(
-        label: const Text("Bulanan"),
-        selected: metodeNabung.value == "bulanan",
-        onSelected: (_) => metodeNabung.value = "bulanan",
-      ),
-    ),
-    const SizedBox(width: 10),
-    Expanded(
-      child: ChoiceChip(
-        label: const Text("Mingguan"),
-        selected: metodeNabung.value == "mingguan",
-        onSelected: (_) => metodeNabung.value = "mingguan",
-      ),
-    ),
-  ],
-)),
-const SizedBox(height: 10),
-                // 🔥 Section Title
+                // ================= DATA REFERENSI (FIX POSISI) =================
                 const Text(
                   "DATA REFERENSI",
                   style: TextStyle(
@@ -171,9 +131,8 @@ const SizedBox(height: 10),
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
 
-                // 🔥 HPHT & HPL
                 Row(
                   children: [
                     Expanded(
@@ -186,7 +145,7 @@ const SizedBox(height: 10),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _infoFieldDisabled(
-                        "ESTIMASI HPL",
+                        "HPL",
                         homeC.hpl.value,
                         Icons.event_available_rounded,
                       ),
@@ -194,21 +153,82 @@ const SizedBox(height: 10),
                   ],
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 25),
 
-                // 🔥 BUTTON SIMPAN
+                // ================= INPUT BIAYA =================
+                TextField(
+                  controller: biayaController,
+                  keyboardType: TextInputType.number,
+                  onChanged: (v) =>
+                      totalBiaya.value = double.tryParse(v) ?? 0,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: Color(0xFF0C2D57),
+                    ),
+                    labelText: "Target Biaya Persalinan (Rp)",
+                    filled: true,
+                    fillColor: Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(18)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // ================= METODE NABUNG =================
+                const Text(
+                  "Metode Menabung",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0C2D57),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Obx(() => Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Text("Bulanan"),
+                            selected: metodeNabung.value == "bulanan",
+                            onSelected: (_) => metodeNabung.value = "bulanan",
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Text("Mingguan"),
+                            selected: metodeNabung.value == "mingguan",
+                            onSelected: (_) => metodeNabung.value = "mingguan",
+                          ),
+                        ),
+                      ],
+                    )),
+
+                const SizedBox(height: 30),
+
+                // ================= BUTTON =================
                 SizedBox(
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0C2D57),
-                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: saveKalkulator,
+                    onPressed: () {
+                      if (isTargetConfigured.value) {
+                        updateKalkulatorConfig();
+                      } else {
+                        saveKalkulator();
+                      }
+                    },
                     child: const Text(
                       "Simpan Rencana",
                       style: TextStyle(
@@ -219,13 +239,17 @@ const SizedBox(height: 10),
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 10),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _infoFieldDisabled(String label, String value, IconData icon) {
     return Column(
@@ -461,6 +485,106 @@ const SizedBox(height: 10),
     isLoading.value = false;
   }
 }
+
+Future<void> editRiwayat({
+  required String riwayatId,
+  required double jumlah,
+  String keterangan = "",
+}) async {
+
+  final kehamilanId = box.read("kehamilan_id");
+
+  if (kehamilanId == null || kehamilanId.toString().isEmpty) {
+    Get.snackbar("Error", "kehamilan_id tidak ditemukan");
+    return;
+  }
+
+  final res = await http.put(
+    Uri.parse("${ApiConfig.baseUrl}/kalkulator/edit-riwayat"),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token"
+    },
+    body: jsonEncode({
+      "kehamilan_id": kehamilanId,
+      "riwayat_id": riwayatId,
+      "jumlah": jumlah,
+      "keterangan": keterangan
+    }),
+  );
+
+  print("EDIT RESPONSE: ${res.statusCode} ${res.body}");
+
+  await getDashboard();
+}
+
+
+Future<void> deleteRiwayat(String riwayatId) async {
+
+  final kehamilanId = box.read("kehamilan_id");
+
+  if (kehamilanId == null || kehamilanId.toString().isEmpty) {
+    Get.snackbar("Error", "kehamilan_id tidak ditemukan");
+    return;
+  }
+
+  final res = await http.delete(
+    Uri.parse("${ApiConfig.baseUrl}/kalkulator/delete-riwayat"),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token"
+    },
+    body: jsonEncode({
+      "kehamilan_id": kehamilanId,
+      "riwayat_id": riwayatId
+    }),
+  );
+
+  print("DELETE RESPONSE: ${res.statusCode} ${res.body}");
+
+  await getDashboard();
+}
+
+Future<void> updateKalkulatorConfig() async {
+  try {
+    isLoading.value = true;
+
+    final kehamilanId = box.read("kehamilan_id");
+
+    final res = await http.put(
+      Uri.parse("${ApiConfig.baseUrl}/kalkulator/update"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode({
+        "kehamilan_id": kehamilanId,
+        "total_biaya": totalBiaya.value,
+        "metode_nabung": metodeNabung.value,
+      }),
+    );
+
+    final data = jsonDecode(res.body);
+
+    if (data["status"] == "success") {
+      await getDashboard();
+      Get.back();
+
+      Get.snackbar(
+        "Berhasil",
+        "Konfigurasi berhasil diupdate",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      Get.snackbar("Error", data["message"]);
+    }
+  } catch (e) {
+    Get.snackbar("Error", e.toString());
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 
 String formatToBackend(String date) {
   try {
