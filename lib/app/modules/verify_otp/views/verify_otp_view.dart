@@ -43,7 +43,7 @@ class VerifyOtpView extends GetView<VerifyOtpController> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Masukkan kode OTP yang telah dikirim ke email Anda.",
+                        "Masukkan kode OTP yang telah dikirim ke whatsapp Anda.",
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[600],

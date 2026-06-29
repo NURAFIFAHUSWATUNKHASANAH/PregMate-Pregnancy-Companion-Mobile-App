@@ -74,6 +74,7 @@ class RegisterView extends GetView<RegisterController> {
                         controller: controller.phoneController,
                         hint: "Contoh: 08xxxxxxxxxx",
                         icon: Icons.phone,
+                        keyboardType: TextInputType.phone,
                       ),
 
                       const SizedBox(height: 20),
@@ -122,6 +123,7 @@ class RegisterView extends GetView<RegisterController> {
                         controller: controller.husbandPhoneController,
                         hint: "Contoh: 08xxxxxxxxxx",
                         icon: Icons.phone,
+                        keyboardType: TextInputType.phone,
                       ),
 
                       const SizedBox(height: 40),
@@ -185,6 +187,7 @@ class RegisterView extends GetView<RegisterController> {
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? onSuffixIconPressed,
@@ -203,6 +206,7 @@ class RegisterView extends GetView<RegisterController> {
       ),
       child: TextField(
         controller: controller,
+        keyboardType: keyboardType,
         obscureText: isPassword ? obscureText : false,
         textAlignVertical: TextAlignVertical.center,
         style: const TextStyle(fontSize: 15),

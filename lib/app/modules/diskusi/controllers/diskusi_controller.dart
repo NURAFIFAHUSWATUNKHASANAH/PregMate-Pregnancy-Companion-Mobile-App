@@ -140,7 +140,28 @@ class DiskusiController extends GetxController {
   /// =========================
   Future<void> addPost() async {
     try {
+      /// 🔥 VALIDASI WAJIB ADA ISI DISKUSI
+      if (postController.text.trim().isEmpty) {
+        Get.snackbar(
+          "Posting Gagal",
+          "Isi diskusi wajib diisi terlebih dahulu.",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900,
+        );
+        return;
+      }
+
       final token = getToken();
+
+      if (token == null) {
+        Get.snackbar(
+          "Error",
+          "Silakan login kembali.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
 
       var request = http.MultipartRequest(
         "POST",
@@ -150,8 +171,9 @@ class DiskusiController extends GetxController {
       request.headers["Authorization"] = "Bearer $token";
 
       request.fields["user_id"] = userId.value;
-      request.fields["content"] = postController.text;
+      request.fields["content"] = postController.text.trim();
 
+      /// 🔥 GAMBAR OPTIONAL
       if (selectedImage.value != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -166,10 +188,35 @@ class DiskusiController extends GetxController {
       if (response.statusCode == 201) {
         postController.clear();
         selectedImage.value = null;
-        fetchPosts();
+
+        await fetchPosts();
+
+        Get.snackbar(
+          "Berhasil",
+          "Diskusi berhasil diposting.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade100,
+          colorText: Colors.green.shade900,
+        );
+      } else {
+        final responseBody = await response.stream.bytesToString();
+
+        Get.snackbar(
+          "Gagal",
+          "Tidak dapat membuat postingan.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        print("ERROR ADD POST: $responseBody");
       }
     } catch (e) {
       print("ERROR ADD POST: $e");
+
+      Get.snackbar(
+        "Error",
+        "Terjadi kesalahan saat mengirim postingan.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -281,28 +328,28 @@ class DiskusiController extends GetxController {
   }
 
   Future<void> deleteComment(String postId, int index) async {
-  final token = getToken();
+    final token = getToken();
 
-  await http.delete(
-    Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
-    headers: {"Authorization": "Bearer $token"},
-  );
+    await http.delete(
+      Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
+      headers: {"Authorization": "Bearer $token"},
+    );
 
-  fetchPosts();
-}
+    fetchPosts();
+  }
 
-Future<void> editComment(String postId, int index, String content) async {
-  final token = getToken();
+  Future<void> editComment(String postId, int index, String content) async {
+    final token = getToken();
 
-  await http.put(
-    Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    },
-    body: jsonEncode({"content": content}),
-  );
+    await http.put(
+      Uri.parse("${ApiConfig.diskusiUrl}/comment/$postId/$index"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({"content": content}),
+    );
 
-  fetchPosts();
-}
+    fetchPosts();
+  }
 }

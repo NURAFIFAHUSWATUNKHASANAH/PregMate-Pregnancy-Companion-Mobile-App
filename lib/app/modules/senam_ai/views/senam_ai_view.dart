@@ -175,8 +175,8 @@ class _SenamAiViewState extends State<SenamAiView> {
       top: 130,
       right: 20,
       child: Container(
-        width: 100,
-        height: 140,
+        width: 180,
+        height: 250,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white30, width: 1.5),

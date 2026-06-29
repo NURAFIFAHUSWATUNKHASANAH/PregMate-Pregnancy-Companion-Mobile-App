@@ -146,6 +146,8 @@ class HomeController extends GetxController {
         box.write("hpht", hpht.value); 
         tinggiBadan.value = data["tinggi_badan"]?.toString() ?? "";
         beratBadan.value = data["berat_badan"]?.toString() ?? "";
+        box.write("tinggi_badan", tinggiBadan.value);
+box.write("berat_badan", beratBadan.value);
         riwayatPenyakit.value = data["riwayat_penyakit"] ?? "";
 
         ukuranJanin.value = data["ukuran_janin"] ?? "";

@@ -87,6 +87,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                   hint: "08xxxxxxxxxx",
                   icon: Icons.phone,
                   enabled: !controller.otpRequested.value,
+                  keyboardType: TextInputType.phone,
                 ),
 
                 if (controller.otpRequested.value) ...[

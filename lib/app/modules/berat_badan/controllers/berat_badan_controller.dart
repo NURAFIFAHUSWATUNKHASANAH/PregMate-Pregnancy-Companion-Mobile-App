@@ -20,41 +20,45 @@ class BeratBadanController extends GetxController {
   /// ==============================
   /// FETCH RIWAYAT
   /// ==============================
-  Future<void> fetchRiwayatBeratBadan() async {
-    isLoading.value = true;
+Future<void> fetchRiwayatBeratBadan() async {
+  isLoading.value = true;
 
-    final token = box.read('auth_token');
+  final token = box.read('auth_token');
 
-    if (token == null) {
-      print("❌ Token tidak ada");
-      isLoading.value = false;
-      return;
+  if (token == null) {
+    print("❌ Token tidak ada");
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiConfig.baseUrl}/berat_badan"),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    /// 🔐 HANDLE TOKEN EXPIRED
+    if (response.statusCode == 401) {
+      final body = jsonDecode(response.body);
+
+      if (body["msg"] == "Token has expired") {
+        print("🔐 Token expired → logout");
+
+        box.erase();
+        Get.offAllNamed('/login');
+        return;
+      }
     }
 
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiConfig.baseUrl}/berat_badan"),
-        headers: {"Authorization": "Bearer $token"},
-      );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-      /// 🔐 HANDLE TOKEN EXPIRED
-      if (response.statusCode == 401) {
-        final body = jsonDecode(response.body);
-
-        if (body["msg"] == "Token has expired") {
-          print("🔐 Token expired → logout");
-
-          box.erase();
-          Get.offAllNamed('/login');
-          return;
-        }
-      }
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        riwayat.value = List<Map<String, dynamic>>.from(data.map((d) {
+      riwayat.value = List<Map<String, dynamic>>.from(
+        data.map((d) {
           double berat = 0.0;
+
           final b = d["berat_badan"];
 
           if (b is String) {
@@ -68,22 +72,28 @@ class BeratBadanController extends GetxController {
             "berat_badan": berat,
             "tanggal": d["tanggal"],
           };
-        }));
+        }),
+      );
 
-        if (riwayat.isNotEmpty) {
-          beratTerakhir.value = riwayat.last["berat_badan"];
-        } else {
-          beratTerakhir.value = 0.0;
-        }
+      final home = Get.find<HomeController>();
+
+      if (riwayat.isNotEmpty) {
+        // gunakan pengukuran terakhir
+        beratTerakhir.value = riwayat.last["berat_badan"];
       } else {
-        print("❌ Gagal ambil berat badan: ${response.body}");
+        // belum ada riwayat -> gunakan BB awal dari validasi kehamilan
+        beratTerakhir.value =
+            double.tryParse(home.beratBadan.value) ?? 0.0;
       }
-    } catch (e) {
-      print("❌ Error: $e");
-    } finally {
-      isLoading.value = false;
+    } else {
+      print("❌ Gagal ambil berat badan: ${response.body}");
     }
+  } catch (e) {
+    print("❌ Error: $e");
+  } finally {
+    isLoading.value = false;
   }
+}
 
 DateTime? getHpht() {
   final hphtString = box.read("hpht");
@@ -92,6 +102,36 @@ DateTime? getHpht() {
   }
   return null;
 }
+
+int getBulanKehamilanByHpht(DateTime tanggal, DateTime hpht) {
+  final start = DateTime(hpht.year, hpht.month, hpht.day);
+  final current = DateTime(tanggal.year, tanggal.month, tanggal.day);
+
+  if (current.isBefore(start)) return -1;
+
+  int bulan = 1;
+  DateTime awal = start;
+
+  while (true) {
+    final akhir = DateTime(
+      awal.year,
+      awal.month + 1,
+      awal.day,
+    );
+
+    if (current.isBefore(akhir)) {
+      return bulan;
+    }
+
+    bulan++;
+    awal = akhir;
+
+    if (bulan > 10) break;
+  }
+
+  return bulan;
+}
+
 
   /// ==============================
   /// TAMBAH DATA
@@ -209,21 +249,29 @@ int getMingguKehamilan(DateTime date, DateTime hpht) {
   return (selisihHari ~/ 7) + 1; // pakai integer division
 }
 
+DateTime getAwalBulanKehamilanBerikutnya(DateTime date) {
+  final hpht = getHpht();
+  if (hpht == null) return date;
 
-bool isMingguSudahAda(DateTime date) {
-final hphtString = box.read("hpht") ?? "";
+  final bulan = getBulanKehamilanByHpht(date, hpht);
 
-  if (hphtString.isEmpty) return false;
+  return DateTime(
+    hpht.year,
+    hpht.month + bulan,
+    hpht.day,
+  );
+}
 
-  final hpht = DateTime.parse(hphtString);
+bool isBulanSudahAda(DateTime date) {
+  final hpht = getHpht();
+  if (hpht == null) return false;
 
-  final mingguDipilih = getMingguKehamilan(_normalize(date), hpht);
+  final bulanDipilih = getBulanKehamilanByHpht(date, hpht);
 
   return riwayat.any((item) {
-    final tgl = _normalize(DateTime.parse(item['tanggal']));
-    final mingguData = getMingguKehamilan(tgl, hpht);
+    final tgl = DateTime.parse(item["tanggal"]);
 
-    return mingguData == mingguDipilih;
+    return getBulanKehamilanByHpht(tgl, hpht) == bulanDipilih;
   });
 }
 
@@ -254,39 +302,222 @@ final bb = double.tryParse(box.read("berat_badan") ?? "") ?? 0;
   return bb / (tinggiMeter * tinggiMeter);
 }
 
-double getBatasNormalMingguan() {
-  final imt = hitungIMT();
+double getIMT() {
+  final home = Get.find<HomeController>();
 
-  if (imt == 0) return 0.4;
+  final tb = double.tryParse(home.tinggiBadan.value) ?? 0;
+  final bb = double.tryParse(home.beratBadan.value) ?? 0;
 
-  if (imt < 18.5) return 0.5;
-  if (imt < 25) return 0.4;
-  if (imt < 30) return 0.3;
-  return 0.2;
+  if (tb == 0 || bb == 0) return 0;
+
+  final meter = tb / 100;
+
+  return bb / (meter * meter);
 }
 
-bool isLonjakanAbnormal(int index) {
-  if (index <= 0 || index >= riwayat.length) return false;
+bool bolehInputBulanSekarang() {
+  final hpht = getHpht();
+  if (hpht == null) return false;
 
-  final current = riwayat[index];
-  final prev = riwayat[index - 1];
+  return !isBulanSudahAda(DateTime.now());
+}
 
-  final currBB = (current["berat_badan"] as num).toDouble();
-  final prevBB = (prev["berat_badan"] as num).toDouble();
+Map<String, dynamic> getKategoriIMT() {
+  final imt = getIMT();
 
-  final kenaikan = currBB - prevBB;
+  if (imt < 18.5) {
+    return {
+      "kategori": "Kurus",
+      "minimal": 13.0,
+      "maksimal": 18.0,
+    };
+  }
 
-  final batas = getBatasNormalMingguan();
+  if (imt < 25) {
+    return {
+      "kategori": "Normal",
+      "minimal": 11.0,
+      "maksimal": 16.0,
+    };
+  }
 
-  /// 🔥 tambahan: kalau turun juga warning (opsional tapi bagus)
-  if (kenaikan < 0) return true;
+  if (imt < 30) {
+    return {
+      "kategori": "Gemuk",
+      "minimal": 7.0,
+      "maksimal": 11.0,
+    };
+  }
 
-  return kenaikan > batas;
+  return {
+    "kategori": "Obesitas",
+    "minimal": 5.0,
+    "maksimal": 9.0,
+  };
+}
+
+Map<String, double> getRangeTargetBerat(int bulan) {
+  final kategori = getKategoriIMT();
+
+final home = Get.find<HomeController>();
+
+final bbAwal =
+    double.tryParse(home.beratBadan.value) ?? 0;
+
+  double minNaik;
+  double maxNaik;
+
+  switch (bulan) {
+    case 1:
+      minNaik = 0;
+      maxNaik = 0;
+      break;
+
+    case 2:
+      minNaik = 0.5;
+      maxNaik = 1.0;
+      break;
+
+    case 3:
+      minNaik = 1.0;
+      maxNaik = 2.0;
+      break;
+
+    default:
+      final progress = (bulan - 3) / 6;
+
+      minNaik =
+          1.0 +
+          ((kategori["minimal"]! - 1.0) * progress);
+
+      maxNaik =
+          2.0 +
+          ((kategori["maksimal"]! - 2.0) * progress);
+  }
+
+  return {
+    "minimal": bbAwal + minNaik,
+    "maksimal": bbAwal + maxNaik,
+  };
 }
 
 
 
+int getBulanKehamilan(DateTime tanggal, DateTime hpht) {
+  return getBulanKehamilanByHpht(tanggal, hpht);
+}
 
+Map<String, double> getTargetBulanan() {
+  final kategori = getKategoriIMT();
+
+  final double targetTotal =
+      ((kategori["minimal"] as double) + (kategori["maksimal"] as double)) / 2;
+
+final home = Get.find<HomeController>();
+
+final double bbAwal =
+    double.tryParse(home.beratBadan.value) ?? 0;
+  final Map<String, double> target = {};
+
+  // Trimester 1
+  target["1"] = bbAwal;
+  target["2"] = bbAwal + 0.5;
+  target["3"] = bbAwal + 1.5;
+
+  // Bulan 4–9
+  for (int bulan = 4; bulan <= 9; bulan++) {
+    final progress = (bulan - 3) / 6;
+
+    final kenaikan =
+        1.5 + ((targetTotal - 1.5) * progress);
+
+    target[bulan.toString()] = bbAwal + kenaikan;
+  }
+
+  return target;
+}
+
+bool isBeratSesuaiTarget(int index) {
+  if (index < 0) return true;
+
+  final hphtString = box.read("hpht");
+  if (hphtString == null || hphtString.isEmpty) return true;
+
+  final hpht = DateTime.parse(hphtString);
+
+  final item = riwayat[index];
+
+  final bulan = getBulanKehamilan(
+    DateTime.parse(item["tanggal"]),
+    hpht,
+  );
+
+  final berat = item["berat_badan"];
+
+  final range = getRangeTargetBerat(bulan);
+
+  return berat >= range["minimal"]! &&
+      berat <= range["maksimal"]!;
+}
+
+double getTargetBeratBulan(int bulan) {
+  final kategori = getKategoriIMT();
+
+  final double targetTotal =
+      ((kategori["minimal"] as double) + (kategori["maksimal"] as double)) / 2;
+
+final home = Get.find<HomeController>();
+
+final double bbAwal =
+    double.tryParse(home.beratBadan.value) ?? 0;
+
+  // Batasi agar bulan tetap 1-9
+  if (bulan < 1) bulan = 1;
+  if (bulan > 9) bulan = 9;
+
+  // Trimester 1
+  switch (bulan) {
+    case 1:
+      return bbAwal;
+
+    case 2:
+      return bbAwal + 0.5;
+
+    case 3:
+      return bbAwal + 1.5;
+  }
+
+  // Bulan 4-9
+  final progress = (bulan - 3) / 6;
+
+  final kenaikan =
+      1.5 + ((targetTotal - 1.5) * progress);
+
+  return bbAwal + kenaikan;
+}
+
+Map<String, dynamic> getStatusBeratSaatIni() {
+  final hpht = DateTime.parse(box.read("hpht"));
+
+  final sekarang = DateTime.now();
+
+  final bulan = getBulanKehamilan(sekarang, hpht);
+
+  final range = getRangeTargetBerat(bulan);
+
+final home = Get.find<HomeController>();
+
+final sekarangBB = riwayat.isNotEmpty
+    ? riwayat.last["berat_badan"]
+    : double.tryParse(home.beratBadan.value) ?? 0;
+
+  return {
+    "bulan": bulan,
+    "minimal": range["minimal"],
+    "maksimal": range["maksimal"],
+    "sekarang": sekarangBB,
+  };
+}
 
 Future<void> updateBeratBadan(String id, double berat, {String? tanggal}) async {
   final token = box.read('auth_token');
